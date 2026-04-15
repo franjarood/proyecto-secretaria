@@ -1,25 +1,23 @@
 package es.iesdeteis.secretaria.service;
 
 import es.iesdeteis.secretaria.model.Usuario;
+
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Interfaz de contrato para servicios de gestión de usuarios.
- */
 public interface UsuarioService {
 
-    Usuario crearUsuario(Usuario usuario);
+    List<Usuario> findAll();
 
-    List<Usuario> obtenerTodos();
+    Optional<Usuario> findById(Long id);
 
-    Optional<Usuario> obtenerPorId(Long id);
+    Optional<Usuario> findByEmail(String email);
 
-    Optional<Usuario> obtenerPorEmail(String email);
+    Optional<Usuario> findByDni(String dni);
 
-    Optional<Usuario> obtenerPorDni(String dni);
+    Usuario save(Usuario usuario);
 
-    Usuario actualizarUsuario(Long id, Usuario usuarioActualizado);
+    Usuario update(Long id, Usuario usuarioActualizado);
 
-    void eliminarUsuario(Long id);
+    void deleteById(Long id);
 }

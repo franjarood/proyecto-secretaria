@@ -22,7 +22,27 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public Usuario crearUsuario(Usuario usuario) {
+    public List<Usuario> findAll() {
+        return usuarioRepository.findAll();
+    }
+
+    @Override
+    public Optional<Usuario> findById(Long id) {
+        return usuarioRepository.findById(id);
+    }
+
+    @Override
+    public Optional<Usuario> findByEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
+
+    @Override
+    public Optional<Usuario> findByDni(String dni) {
+        return usuarioRepository.findByDni(dni);
+    }
+
+    @Override
+    public Usuario save(Usuario usuario) {
         if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
             throw new UsuarioDuplicadoException("El email ya existe en el sistema");
         }
@@ -36,27 +56,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public List<Usuario> obtenerTodos() {
-        return usuarioRepository.findAll();
-    }
-
-    @Override
-    public Optional<Usuario> obtenerPorId(Long id) {
-        return usuarioRepository.findById(id);
-    }
-
-    @Override
-    public Optional<Usuario> obtenerPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
-    }
-
-    @Override
-    public Optional<Usuario> obtenerPorDni(String dni) {
-        return usuarioRepository.findByDni(dni);
-    }
-
-    @Override
-    public Usuario actualizarUsuario(Long id, Usuario usuarioActualizado) {
+    public Usuario update(Long id, Usuario usuarioActualizado) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
 
@@ -81,7 +81,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void eliminarUsuario(Long id) {
+    public void deleteById(Long id) {
         if (!usuarioRepository.existsById(id)) {
             throw new UsuarioNoEncontradoException("Usuario no encontrado");
         }

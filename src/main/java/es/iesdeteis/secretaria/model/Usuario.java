@@ -1,12 +1,7 @@
 package es.iesdeteis.secretaria.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
-/**
- * Entidad que representa un usuario externo del sistema (alumno o familia).
- * La contraseña debe almacenarse encriptada con BCrypt antes de persistir.
- */
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
@@ -17,21 +12,20 @@ public class Usuario {
 
     private String nombre;
     private String apellidos;
-    private String dni;      // Único en el sistema
-    private String email;    // Único en el sistema
+    private String dni;
+    private String email;
     private String telefono;
-    private String password; // Debe estar encriptado en BD
+    private String password;
 
     @Enumerated(EnumType.STRING)
-    private RolUsuario rol;  // ALUMNO o FAMILIA
+    private RolUsuario rol;
 
-    private LocalDateTime creadoEn; // Establecido automáticamente por @PrePersist
+    private String creado_en;
 
-    public Usuario() {
-    }
+    // CONSTRUCTORES
 
-    public Usuario(String nombre, String apellidos, String dni, String email,
-                   String telefono, String password, RolUsuario rol) {
+    public Usuario(Long id, String nombre, String apellidos, String dni, String email, String telefono, String password, RolUsuario rol, String creado_en) {
+        this.id = id;
         this.nombre = nombre;
         this.apellidos = apellidos;
         this.dni = dni;
@@ -39,17 +33,31 @@ public class Usuario {
         this.telefono = telefono;
         this.password = password;
         this.rol = rol;
+        this.creado_en = creado_en;
     }
 
-    @PrePersist
-    public void prePersist() {
-        this.creadoEn = LocalDateTime.now();
+    public Usuario(String nombre, String apellidos, String dni, String email, String telefono, String password, RolUsuario rol, String creado_en) {
+        this.nombre = nombre;
+        this.apellidos = apellidos;
+        this.dni = dni;
+        this.email = email;
+        this.telefono = telefono;
+        this.password = password;
+        this.rol = rol;
+        this.creado_en = creado_en;
     }
 
-    // Getters y Setters
+    public Usuario() {
+    }
+
+    // GETTERS Y SETTERS
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getNombre() {
@@ -108,40 +116,16 @@ public class Usuario {
         this.rol = rol;
     }
 
-    public LocalDateTime getCreadoEn() {
-        return creadoEn;
+    public String getCreado_en() {
+        return creado_en;
     }
 
-    public void setCreadoEn(LocalDateTime creadoEn) {
-        this.creadoEn = creadoEn;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Usuario usuario = (Usuario) o;
-
-        return id != null && id.equals(usuario.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+    public void setCreado_en(String creado_en) {
+        this.creado_en = creado_en;
     }
 
     @Override
     public String toString() {
-        return "Usuario{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", apellidos='" + apellidos + '\'' +
-                ", dni='" + dni + '\'' +
-                ", email='" + email + '\'' +
-                ", telefono='" + telefono + '\'' +
-                ", rol=" + rol +
-                ", creadoEn=" + creadoEn +
-                '}';
+        return "Usuario [id=" + id + ", nombre=" + nombre + "]";
     }
 }
