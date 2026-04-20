@@ -2,6 +2,7 @@ package es.iesdeteis.secretaria.controller;
 
 import es.iesdeteis.secretaria.model.TipoTramite;
 import es.iesdeteis.secretaria.service.TipoTramiteService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,12 +29,12 @@ public class TipoTramiteController {
     }
 
     @PostMapping
-    public TipoTramite save(@RequestBody TipoTramite tipoTramite) {
+    public TipoTramite save(@Valid @RequestBody TipoTramite tipoTramite) {
         return tipoTramiteService.save(tipoTramite);
     }
 
     @PutMapping("/{id}")
-    public TipoTramite update(@PathVariable Long id, @RequestBody TipoTramite tipoTramite) {
+    public TipoTramite update(@PathVariable Long id, @Valid @RequestBody TipoTramite tipoTramite) {
         return tipoTramiteService.update(id, tipoTramite);
     }
 

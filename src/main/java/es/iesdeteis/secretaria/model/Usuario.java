@@ -1,6 +1,11 @@
 package es.iesdeteis.secretaria.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
@@ -10,21 +15,38 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "El nombre no puede estar vacío")
     private String nombre;
+
+    @NotBlank(message = "Los apellidos no pueden estar vacíos")
     private String apellidos;
+
+    @NotBlank(message = "El DNI no puede estar vacío")
     private String dni;
+
+    @NotBlank(message = "El email no puede estar vacío")
+    @Email(message = "El formato del email no es válido")
     private String email;
+
+    @NotBlank(message = "El teléfono no puede estar vacío")
     private String telefono;
+
+    @NotBlank(message = "La contraseña no puede estar vacía")
     private String password;
 
+    @NotNull(message = "El rol no puede ser nulo")
     @Enumerated(EnumType.STRING)
     private RolUsuario rol;
 
-    private String creado_en;
+    private LocalDateTime creadoEn;
 
     // CONSTRUCTORES
+    public Usuario() {
+    }
 
-    public Usuario(Long id, String nombre, String apellidos, String dni, String email, String telefono, String password, RolUsuario rol, String creado_en) {
+    public Usuario(Long id, String nombre, String apellidos, String dni,
+                   String email, String telefono, String password,
+                   RolUsuario rol, LocalDateTime creadoEn) {
         this.id = id;
         this.nombre = nombre;
         this.apellidos = apellidos;
@@ -33,10 +55,12 @@ public class Usuario {
         this.telefono = telefono;
         this.password = password;
         this.rol = rol;
-        this.creado_en = creado_en;
+        this.creadoEn = creadoEn;
     }
 
-    public Usuario(String nombre, String apellidos, String dni, String email, String telefono, String password, RolUsuario rol, String creado_en) {
+    public Usuario(String nombre, String apellidos, String dni,
+                   String email, String telefono, String password,
+                   RolUsuario rol, LocalDateTime creadoEn) {
         this.nombre = nombre;
         this.apellidos = apellidos;
         this.dni = dni;
@@ -44,14 +68,10 @@ public class Usuario {
         this.telefono = telefono;
         this.password = password;
         this.rol = rol;
-        this.creado_en = creado_en;
-    }
-
-    public Usuario() {
+        this.creadoEn = creadoEn;
     }
 
     // GETTERS Y SETTERS
-
     public Long getId() {
         return id;
     }
@@ -116,12 +136,12 @@ public class Usuario {
         this.rol = rol;
     }
 
-    public String getCreado_en() {
-        return creado_en;
+    public LocalDateTime getCreadoEn() {
+        return creadoEn;
     }
 
-    public void setCreado_en(String creado_en) {
-        this.creado_en = creado_en;
+    public void setCreadoEn(LocalDateTime creadoEn) {
+        this.creadoEn = creadoEn;
     }
 
     @Override

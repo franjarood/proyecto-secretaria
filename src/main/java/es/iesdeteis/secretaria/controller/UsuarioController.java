@@ -2,10 +2,10 @@ package es.iesdeteis.secretaria.controller;
 
 import es.iesdeteis.secretaria.model.Usuario;
 import es.iesdeteis.secretaria.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -29,12 +29,12 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public Usuario saveUsuario(@RequestBody Usuario usuario) {
+    public Usuario saveUsuario(@Valid @RequestBody Usuario usuario) {
         return usuarioService.save(usuario);
     }
 
     @PutMapping("/{id}")
-    public Usuario updateUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {
+    public Usuario updateUsuario(@PathVariable Long id, @Valid @RequestBody Usuario usuario) {
         return usuarioService.update(id, usuario);
     }
 

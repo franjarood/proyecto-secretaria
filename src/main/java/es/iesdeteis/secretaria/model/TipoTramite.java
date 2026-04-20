@@ -1,19 +1,27 @@
 package es.iesdeteis.secretaria.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "tipos_tramite")
 public class TipoTramite {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "El nombre no puede estar vacío")
     private String nombre;
+
+    @NotBlank(message = "La descripción no puede estar vacía")
     private String descripcion;
+
+    @NotNull(message = "La duración estimada no puede ser nula")
     private Integer duracionEstimada; // en minutos
+
+    @NotNull(message = "Debe indicar si requiere documentación")
     private Boolean requiereDocumentacion;
 
 
