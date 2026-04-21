@@ -48,4 +48,7 @@ public interface TurnoService {
 
     // Pasar al siguiente turno de la cola
     Turno siguienteTurno();
+
+    // Reanudar turno y devolverlo a la cola
+    Turno reanudarTurno(Long id);
 }

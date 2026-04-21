@@ -115,4 +115,20 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    // Estado de turno inválido
+    @ExceptionHandler(EstadoTurnoInvalidoException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleEstadoTurnoInvalido(EstadoTurnoInvalidoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+        error.put("error", "Estado de turno inválido");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+
 }

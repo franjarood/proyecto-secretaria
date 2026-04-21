@@ -3,6 +3,7 @@ package es.iesdeteis.secretaria.service;
 import es.iesdeteis.secretaria.exception.ReservaNoEncontradaException;
 import es.iesdeteis.secretaria.exception.ReservaYaProcesadaException;
 import es.iesdeteis.secretaria.exception.TurnoNoEncontradoException;
+import es.iesdeteis.secretaria.exception.EstadoTurnoInvalidoException;
 import es.iesdeteis.secretaria.model.*;
 import es.iesdeteis.secretaria.repository.ReservaTurnoRepository;
 import es.iesdeteis.secretaria.repository.TipoTramiteRepository;
@@ -163,8 +164,8 @@ public class TurnoServiceImpl implements TurnoService {
         // Guardar hora de llegada actual
         turno.setHoraLlegada(LocalTime.now());
 
-        // Cambiar estado a CONFIRMADO
-        turno.setEstadoTurno(EstadoTurno.CONFIRMADO);
+        // Cambiar estado a EN_COLA
+        turno.setEstadoTurno(EstadoTurno.EN_COLA);
 
         return turnoRepository.save(turno);
     }
@@ -275,10 +276,16 @@ public class TurnoServiceImpl implements TurnoService {
         Turno turno = turnoRepository.findById(id)
                 .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
 
-        turno.setEstadoTurno(EstadoTurno.valueOf(estado.toUpperCase()));
+        try {
+            EstadoTurno nuevoEstado = EstadoTurno.valueOf(estado.toUpperCase());
+            turno.setEstadoTurno(nuevoEstado);
+        } catch (IllegalArgumentException e) {
+            throw new EstadoTurnoInvalidoException("El estado indicado no es válido");
+        }
 
         return turnoRepository.save(turno);
     }
+
 
     // Pasar al siguiente turno de la cola
     @Override
@@ -307,6 +314,23 @@ public class TurnoServiceImpl implements TurnoService {
         }
 
         throw new TurnoNoEncontradoException("No hay más turnos en espera");
+    }
+
+    // Reanudar turno y devolverlo a la cola
+    @Override
+    public Turno reanudarTurno(Long id) {
+
+        Turno turno = turnoRepository.findById(id)
+                .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
+
+        if (turno.getEstadoTurno() != EstadoTurno.EN_ATENCION
+                && turno.getEstadoTurno() != EstadoTurno.PAUSADO) {
+            throw new IllegalStateException("Solo se pueden reanudar turnos en atención o pausados");
+        }
+
+        turno.setEstadoTurno(EstadoTurno.REANUDADO);
+
+        return turnoRepository.save(turno);
     }
 
     // =========================

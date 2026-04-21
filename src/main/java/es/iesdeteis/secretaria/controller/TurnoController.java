@@ -120,4 +120,10 @@ public class TurnoController {
     public Turno siguienteTurno() {
         return turnoService.siguienteTurno();
     }
+
+    // Reanudar turno y devolverlo a la cola
+    @PutMapping("/{id}/reanudar")
+    public Turno reanudarTurno(@PathVariable Long id) {
+        return turnoService.reanudarTurno(id);
+    }
 }
