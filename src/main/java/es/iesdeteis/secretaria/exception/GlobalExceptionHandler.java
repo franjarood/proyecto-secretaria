@@ -130,5 +130,33 @@ public class GlobalExceptionHandler {
         return error;
     }
 
+    // Incidencia no encontrada
+    @ExceptionHandler(IncidenciaNoEncontradaException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleIncidenciaNoEncontrada(IncidenciaNoEncontradaException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Incidencia no encontrada");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // Historial no encontrado
+    @ExceptionHandler(HistorialAccionNoEncontradaException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleHistorialNoEncontrado(HistorialAccionNoEncontradaException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Historial no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
 
 }

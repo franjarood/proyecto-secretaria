@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+// IMPORTANTE:
+// Esto evita bucles infinitos al devolver JSON (Turno -> Incidencias -> Turno...)
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(name = "turnos")
 public class Turno {
@@ -70,6 +74,10 @@ public class Turno {
     @ManyToOne
     @JoinColumn(name = "reserva_turno_id")
     private ReservaTurno reservaTurno;
+
+    @JsonManagedReference // Parte principal de la relación Turno -> Incidencia en JSON
+    @OneToMany(mappedBy = "turno", cascade = CascadeType.ALL)
+    private List<Incidencia> incidencias;
 
     // =========================
     // AUDITORÍA
@@ -238,6 +246,14 @@ public class Turno {
 
     public void setReservaTurno(ReservaTurno reservaTurno) {
         this.reservaTurno = reservaTurno;
+    }
+
+    public List<Incidencia> getIncidencias() {
+        return incidencias;
+    }
+
+    public void setIncidencias(List<Incidencia> incidencias) {
+        this.incidencias = incidencias;
     }
 
     public LocalDateTime getCreatedAt() {
