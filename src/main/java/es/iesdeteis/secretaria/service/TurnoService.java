@@ -25,9 +25,21 @@ public interface TurnoService {
     // Calcular duración estimada según los trámites
     Integer calculateEstimatedDuration(Turno turno);
 
-    // Confirmar llegada en kiosko (máx 15 min antes)
+    // Confirmar llegada en kiosko
     Turno confirmArrival(Long id);
 
     // Calcular tiempo de espera real en cola
     Integer calculateRealWaitingTime(Long id);
+
+    // Obtener cola ordenada por prioridad y hora
+    List<Turno> getQueue();
+
+    // Obtener posición del turno en la cola
+    int getPositionInQueue(Long id);
+
+    // Obtener número de turnos que tiene delante
+    int getPeopleAhead(Long id);
+
+    // Cambiar estado del turno
+    Turno cambiarEstado(Long id, String estado);
 }

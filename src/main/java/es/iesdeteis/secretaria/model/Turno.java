@@ -13,6 +13,10 @@ import java.util.List;
 @Table(name = "turnos")
 public class Turno {
 
+    // =========================
+    // ATRIBUTOS
+    // =========================
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,19 +32,32 @@ public class Turno {
 
     private LocalTime horaLlegada;
 
-    @NotNull(message = "El estado del turno no puede ser nulo")
     @Enumerated(EnumType.STRING)
     private EstadoTurno estadoTurno;
 
-    @NotNull(message = "La prioridad no puede ser nula")
+    // Se calcula automáticamente
     private Integer prioridad;
 
     @NotBlank(message = "El origen del turno no puede estar vacío")
-    private String origenTurno;
+    private String origenTurno; // ONLINE / KIOSKO
 
     private String observaciones;
 
+    // Se calcula automáticamente
     private Integer duracionEstimada;
+
+    // =========================
+    // Cola inteligente
+    // =========================
+
+    private Boolean reingreso;          // si vuelve por incidencia previa
+    private Boolean incidencia;         // hubo problema durante atención
+    private Boolean prioridadManual;    // secretaría decide subir prioridad
+    private String motivoPrioridad;     // explicación (opcional)
+
+    // =========================
+    // RELACIONES
+    // =========================
 
     @ManyToMany
     @JoinTable(
@@ -50,54 +67,36 @@ public class Turno {
     )
     private List<TipoTramite> tiposTramite;
 
+    // =========================
+    // AUDITORÍA
+    // =========================
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
 
-
+    // =========================
     // CONSTRUCTORES
+    // =========================
+
     public Turno() {
     }
 
-    public Turno(Long id, String numeroTurno, LocalDate fechaCita, LocalTime horaCita,
-                 LocalTime horaLlegada, EstadoTurno estadoTurno, Integer prioridad,
-                 String origenTurno, String observaciones, Integer duracionEstimada,
-                 List<TipoTramite> tiposTramite, LocalDateTime createdAt,
-                 LocalDateTime updatedAt) {
-        this.id = id;
-        this.numeroTurno = numeroTurno;
-        this.fechaCita = fechaCita;
-        this.horaCita = horaCita;
-        this.horaLlegada = horaLlegada;
-        this.estadoTurno = estadoTurno;
-        this.prioridad = prioridad;
-        this.origenTurno = origenTurno;
-        this.observaciones = observaciones;
-        this.duracionEstimada = duracionEstimada;
-        this.tiposTramite = tiposTramite;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
     public Turno(String numeroTurno, LocalDate fechaCita, LocalTime horaCita,
-                 LocalTime horaLlegada, EstadoTurno estadoTurno, Integer prioridad,
-                 String origenTurno, String observaciones, Integer duracionEstimada,
-                 List<TipoTramite> tiposTramite) {
+                 String origenTurno, String observaciones, List<TipoTramite> tiposTramite) {
         this.numeroTurno = numeroTurno;
         this.fechaCita = fechaCita;
         this.horaCita = horaCita;
-        this.horaLlegada = horaLlegada;
-        this.estadoTurno = estadoTurno;
-        this.prioridad = prioridad;
         this.origenTurno = origenTurno;
         this.observaciones = observaciones;
-        this.duracionEstimada = duracionEstimada;
         this.tiposTramite = tiposTramite;
     }
 
+    // =========================
+    // AUDITORÍA AUTOMÁTICA
+    // =========================
 
-    // AUDITORÍA
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
@@ -109,14 +108,12 @@ public class Turno {
         this.updatedAt = LocalDateTime.now();
     }
 
-
+    // =========================
     // GETTERS Y SETTERS
+    // =========================
+
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getNumeroTurno() {
@@ -191,6 +188,38 @@ public class Turno {
         this.duracionEstimada = duracionEstimada;
     }
 
+    public Boolean getReingreso() {
+        return reingreso;
+    }
+
+    public void setReingreso(Boolean reingreso) {
+        this.reingreso = reingreso;
+    }
+
+    public Boolean getIncidencia() {
+        return incidencia;
+    }
+
+    public void setIncidencia(Boolean incidencia) {
+        this.incidencia = incidencia;
+    }
+
+    public Boolean getPrioridadManual() {
+        return prioridadManual;
+    }
+
+    public void setPrioridadManual(Boolean prioridadManual) {
+        this.prioridadManual = prioridadManual;
+    }
+
+    public String getMotivoPrioridad() {
+        return motivoPrioridad;
+    }
+
+    public void setMotivoPrioridad(String motivoPrioridad) {
+        this.motivoPrioridad = motivoPrioridad;
+    }
+
     public List<TipoTramite> getTiposTramite() {
         return tiposTramite;
     }
@@ -203,24 +232,19 @@ public class Turno {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-
+    // =========================
     // TO STRING
+    // =========================
+
     @Override
     public String toString() {
-        return "Turno [id=" + id
-                + ", numeroTurno=" + numeroTurno
-                + ", estadoTurno=" + estadoTurno + "]";
+        return "Turno [id=" + id +
+                ", numeroTurno=" + numeroTurno +
+                ", estadoTurno=" + estadoTurno +
+                ", prioridad=" + prioridad + "]";
     }
 }
