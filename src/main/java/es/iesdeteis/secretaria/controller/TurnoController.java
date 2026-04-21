@@ -33,10 +33,16 @@ public class TurnoController {
                 .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
     }
 
-    // Crear turno (reserva)
+    // Crear nuevo turno
     @PostMapping
     public Turno saveTurno(@Valid @RequestBody Turno turno) {
         return turnoService.save(turno);
+    }
+
+    // Crear turno a partir de una reserva
+    @PostMapping("/desde-reserva/{idReserva}")
+    public Turno crearTurnoDesdeReserva(@PathVariable Long idReserva) {
+        return turnoService.crearTurnoDesdeReserva(idReserva);
     }
 
     // Actualizar turno
@@ -107,5 +113,11 @@ public class TurnoController {
     @PutMapping("/{id}/estado")
     public Turno cambiarEstado(@PathVariable Long id, @RequestParam String estado) {
         return turnoService.cambiarEstado(id, estado);
+    }
+
+    // Pasar al siguiente turno de la cola
+    @PutMapping("/siguiente")
+    public Turno siguienteTurno() {
+        return turnoService.siguienteTurno();
     }
 }

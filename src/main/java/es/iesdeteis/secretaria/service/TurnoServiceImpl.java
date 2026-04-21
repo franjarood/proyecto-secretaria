@@ -1,9 +1,10 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.exception.ReservaNoEncontradaException;
+import es.iesdeteis.secretaria.exception.ReservaYaProcesadaException;
 import es.iesdeteis.secretaria.exception.TurnoNoEncontradoException;
-import es.iesdeteis.secretaria.model.EstadoTurno;
-import es.iesdeteis.secretaria.model.TipoTramite;
-import es.iesdeteis.secretaria.model.Turno;
+import es.iesdeteis.secretaria.model.*;
+import es.iesdeteis.secretaria.repository.ReservaTurnoRepository;
 import es.iesdeteis.secretaria.repository.TipoTramiteRepository;
 import es.iesdeteis.secretaria.repository.TurnoRepository;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,14 @@ public class TurnoServiceImpl implements TurnoService {
 
     private final TurnoRepository turnoRepository;
     private final TipoTramiteRepository tipoTramiteRepository;
+    private final ReservaTurnoRepository reservaTurnoRepository;
 
-    public TurnoServiceImpl(TurnoRepository turnoRepository, TipoTramiteRepository tipoTramiteRepository) {
+    public TurnoServiceImpl(TurnoRepository turnoRepository,
+                            TipoTramiteRepository tipoTramiteRepository,
+                            ReservaTurnoRepository reservaTurnoRepository) {
         this.turnoRepository = turnoRepository;
         this.tipoTramiteRepository = tipoTramiteRepository;
+        this.reservaTurnoRepository = reservaTurnoRepository;
     }
 
     @Override
@@ -55,6 +60,37 @@ public class TurnoServiceImpl implements TurnoService {
     }
 
     @Override
+    public Turno crearTurnoDesdeReserva(Long reservaId) {
+
+        ReservaTurno reservaTurno = reservaTurnoRepository.findById(reservaId)
+                .orElseThrow(() -> new ReservaNoEncontradaException("Reserva no encontrada"));
+
+        if (reservaTurno.getEstadoReserva() == EstadoReserva.CONFIRMADA) {
+            throw new ReservaYaProcesadaException("La reserva ya ha generado un turno");
+        }
+
+        Turno turno = new Turno();
+
+        turno.setNumeroTurno("R-" + reservaTurno.getId());
+        turno.setFechaCita(reservaTurno.getFechaCita());
+        turno.setHoraCita(reservaTurno.getHoraCita());
+        turno.setOrigenTurno(reservaTurno.getOrigenTurno());
+
+        List<TipoTramite> tramitesCompletos = cargarTramitesCompletos(reservaTurno.getTiposTramite());
+        turno.setTiposTramite(new ArrayList<>(tramitesCompletos));
+
+        turno.setReservaTurno(reservaTurno);
+        turno.setEstadoTurno(EstadoTurno.RESERVADO);
+        turno.setDuracionEstimada(calculateEstimatedDuration(turno));
+        turno.setPrioridad(calculatePriority(turno));
+
+        reservaTurno.setEstadoReserva(EstadoReserva.CONFIRMADA);
+        reservaTurnoRepository.save(reservaTurno);
+
+        return turnoRepository.save(turno);
+    }
+
+    @Override
     public Turno update(Long id, Turno turnoActualizado) {
         Turno turno = turnoRepository.findById(id)
                 .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
@@ -73,6 +109,9 @@ public class TurnoServiceImpl implements TurnoService {
         turno.setIncidencia(turnoActualizado.getIncidencia());
         turno.setPrioridadManual(turnoActualizado.getPrioridadManual());
         turno.setMotivoPrioridad(turnoActualizado.getMotivoPrioridad());
+
+        // Actualizar reserva asociada
+        turno.setReservaTurno(turnoActualizado.getReservaTurno());
 
         // Cargar trámites completos desde BD
         List<TipoTramite> tramitesCompletos = cargarTramitesCompletos(turnoActualizado.getTiposTramite());
@@ -241,6 +280,35 @@ public class TurnoServiceImpl implements TurnoService {
         return turnoRepository.save(turno);
     }
 
+    // Pasar al siguiente turno de la cola
+    @Override
+    public Turno siguienteTurno() {
+
+        List<Turno> cola = getQueue();
+
+        for (Turno t : cola) {
+            if (t.getEstadoTurno() == EstadoTurno.EN_ATENCION) {
+                t.setEstadoTurno(EstadoTurno.FINALIZADO);
+                turnoRepository.save(t);
+                break;
+            }
+        }
+
+        List<Turno> colaActualizada = getQueue();
+
+        for (Turno t : colaActualizada) {
+            if (t.getEstadoTurno() == EstadoTurno.CONFIRMADO
+                    || t.getEstadoTurno() == EstadoTurno.EN_COLA
+                    || t.getEstadoTurno() == EstadoTurno.REANUDADO) {
+
+                t.setEstadoTurno(EstadoTurno.EN_ATENCION);
+                return turnoRepository.save(t);
+            }
+        }
+
+        throw new TurnoNoEncontradoException("No hay más turnos en espera");
+    }
+
     // =========================
     // MÉTODOS AUXILIARES
     // =========================
@@ -281,5 +349,4 @@ public class TurnoServiceImpl implements TurnoService {
         // Prioridad 3 -> sin cita
         return 3;
     }
-
 }

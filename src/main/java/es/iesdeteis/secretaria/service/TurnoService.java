@@ -13,8 +13,11 @@ public interface TurnoService {
     // Buscar turno por ID
     Optional<Turno> findById(Long id);
 
-    // Crear nuevo turno (reserva)
+    // Crear nuevo turno
     Turno save(Turno turno);
+
+    // Crear turno a partir de una reserva
+    Turno crearTurnoDesdeReserva(Long reservaId);
 
     // Actualizar turno existente
     Turno update(Long id, Turno turno);
@@ -42,4 +45,7 @@ public interface TurnoService {
 
     // Cambiar estado del turno
     Turno cambiarEstado(Long id, String estado);
+
+    // Pasar al siguiente turno de la cola
+    Turno siguienteTurno();
 }

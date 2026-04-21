@@ -67,6 +67,10 @@ public class Turno {
     )
     private List<TipoTramite> tiposTramite;
 
+    @ManyToOne
+    @JoinColumn(name = "reserva_turno_id")
+    private ReservaTurno reservaTurno;
+
     // =========================
     // AUDITORÍA
     // =========================
@@ -226,6 +230,14 @@ public class Turno {
 
     public void setTiposTramite(List<TipoTramite> tiposTramite) {
         this.tiposTramite = tiposTramite;
+    }
+
+    public ReservaTurno getReservaTurno() {
+        return reservaTurno;
+    }
+
+    public void setReservaTurno(ReservaTurno reservaTurno) {
+        this.reservaTurno = reservaTurno;
     }
 
     public LocalDateTime getCreatedAt() {
