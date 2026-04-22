@@ -21,4 +21,7 @@ public interface HistorialAccionService {
 
     // Eliminar acción
     void deleteById(Long id);
+
+    // Obtener historial de un turno concreto
+    List<HistorialAccion> findByTurnoId(Long turnoId);
 }

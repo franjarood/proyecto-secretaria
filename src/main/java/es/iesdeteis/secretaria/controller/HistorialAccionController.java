@@ -48,4 +48,10 @@ public class HistorialAccionController {
     public void deleteHistorial(@PathVariable Long id) {
         historialAccionService.deleteById(id);
     }
+
+    // Obtener historial de un turno concreto
+    @GetMapping("/turno/{id}")
+    public List<HistorialAccion> getHistorialPorTurno(@PathVariable Long id) {
+        return historialAccionService.findByTurnoId(id);
+    }
 }

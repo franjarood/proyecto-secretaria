@@ -54,4 +54,9 @@ public class HistorialAccionServiceImpl implements HistorialAccionService {
 
         historialAccionRepository.deleteById(id);
     }
+
+    @Override
+    public List<HistorialAccion> findByTurnoId(Long turnoId) {
+        return historialAccionRepository.findByEntidadAfectadaAndIdEntidad("Turno", turnoId);
+    }
 }

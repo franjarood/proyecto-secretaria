@@ -2,20 +2,20 @@ package es.iesdeteis.secretaria.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class EstadoPreMatriculaDTO {
+public class EstadoTurnoDTO {
 
     @NotBlank(message = "El estado no puede estar vacío")
     private String estado;
 
-    // CONSTRUCTOR
-    public EstadoPreMatriculaDTO() {
+    // CONSTRUCTORES
+    public EstadoTurnoDTO() {
     }
 
-    public EstadoPreMatriculaDTO(String estado) {
+    public EstadoTurnoDTO(String estado) {
         this.estado = estado;
     }
 
-    // GETTER Y SETTER
+    // GETTERS Y SETTERS
     public String getEstado() {
         return estado;
     }

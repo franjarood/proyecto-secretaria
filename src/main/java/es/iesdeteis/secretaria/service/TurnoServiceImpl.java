@@ -1,13 +1,16 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.exception.EstadoTurnoInvalidoException;
 import es.iesdeteis.secretaria.exception.ReservaNoEncontradaException;
 import es.iesdeteis.secretaria.exception.ReservaYaProcesadaException;
 import es.iesdeteis.secretaria.exception.TurnoNoEncontradoException;
-import es.iesdeteis.secretaria.exception.EstadoTurnoInvalidoException;
 import es.iesdeteis.secretaria.model.*;
 import es.iesdeteis.secretaria.repository.ReservaTurnoRepository;
 import es.iesdeteis.secretaria.repository.TipoTramiteRepository;
 import es.iesdeteis.secretaria.repository.TurnoRepository;
+import es.iesdeteis.secretaria.repository.UsuarioRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -18,17 +21,31 @@ import java.util.Optional;
 @Service
 public class TurnoServiceImpl implements TurnoService {
 
+    // ATRIBUTOS
+
     private final TurnoRepository turnoRepository;
     private final TipoTramiteRepository tipoTramiteRepository;
     private final ReservaTurnoRepository reservaTurnoRepository;
+    private final HistorialAccionService historialAccionService;
+    private final UsuarioRepository usuarioRepository;
+
+
+    // CONSTRUCTOR
 
     public TurnoServiceImpl(TurnoRepository turnoRepository,
                             TipoTramiteRepository tipoTramiteRepository,
-                            ReservaTurnoRepository reservaTurnoRepository) {
+                            ReservaTurnoRepository reservaTurnoRepository,
+                            HistorialAccionService historialAccionService,
+                            UsuarioRepository usuarioRepository) {
         this.turnoRepository = turnoRepository;
         this.tipoTramiteRepository = tipoTramiteRepository;
         this.reservaTurnoRepository = reservaTurnoRepository;
+        this.historialAccionService = historialAccionService;
+        this.usuarioRepository = usuarioRepository;
     }
+
+
+    // MÉTODOS CRUD
 
     @Override
     public List<Turno> findAll() {
@@ -88,7 +105,16 @@ public class TurnoServiceImpl implements TurnoService {
         reservaTurno.setEstadoReserva(EstadoReserva.CONFIRMADA);
         reservaTurnoRepository.save(reservaTurno);
 
-        return turnoRepository.save(turno);
+        Turno turnoGuardado = turnoRepository.save(turno);
+
+        registrarHistorial(
+                "CREACION_TURNO",
+                "Se creó el turno " + turnoGuardado.getNumeroTurno() +
+                        " desde la reserva " + reservaTurno.getCodigoReferencia(),
+                turnoGuardado.getId()
+        );
+
+        return turnoGuardado;
     }
 
     @Override
@@ -134,6 +160,7 @@ public class TurnoServiceImpl implements TurnoService {
         turnoRepository.deleteById(id);
     }
 
+
     // =========================
     // MÉTODOS PROYECTO
     // =========================
@@ -167,7 +194,15 @@ public class TurnoServiceImpl implements TurnoService {
         // Cambiar estado a EN_COLA
         turno.setEstadoTurno(EstadoTurno.EN_COLA);
 
-        return turnoRepository.save(turno);
+        Turno turnoGuardado = turnoRepository.save(turno);
+
+        registrarHistorial(
+                "CONFIRMACION_LLEGADA",
+                "El turno " + turnoGuardado.getNumeroTurno() + " confirmó su llegada y pasó a EN_COLA",
+                turnoGuardado.getId()
+        );
+
+        return turnoGuardado;
     }
 
     @Override
@@ -276,16 +311,27 @@ public class TurnoServiceImpl implements TurnoService {
         Turno turno = turnoRepository.findById(id)
                 .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
 
+        EstadoTurno estadoAnterior = turno.getEstadoTurno();
+
         try {
             EstadoTurno nuevoEstado = EstadoTurno.valueOf(estado.toUpperCase());
             turno.setEstadoTurno(nuevoEstado);
+
+            Turno turnoGuardado = turnoRepository.save(turno);
+
+            registrarHistorial(
+                    "CAMBIO_ESTADO",
+                    "El turno " + turnoGuardado.getNumeroTurno() +
+                            " cambió de " + estadoAnterior + " a " + nuevoEstado,
+                    turnoGuardado.getId()
+            );
+
+            return turnoGuardado;
+
         } catch (IllegalArgumentException e) {
             throw new EstadoTurnoInvalidoException("El estado indicado no es válido");
         }
-
-        return turnoRepository.save(turno);
     }
-
 
     // Pasar al siguiente turno de la cola
     @Override
@@ -296,7 +342,14 @@ public class TurnoServiceImpl implements TurnoService {
         for (Turno t : cola) {
             if (t.getEstadoTurno() == EstadoTurno.EN_ATENCION) {
                 t.setEstadoTurno(EstadoTurno.FINALIZADO);
-                turnoRepository.save(t);
+
+                Turno turnoFinalizado = turnoRepository.save(t);
+
+                registrarHistorial(
+                        "FINALIZACION_TURNO",
+                        "El turno " + turnoFinalizado.getNumeroTurno() + " pasó a FINALIZADO",
+                        turnoFinalizado.getId()
+                );
                 break;
             }
         }
@@ -304,12 +357,19 @@ public class TurnoServiceImpl implements TurnoService {
         List<Turno> colaActualizada = getQueue();
 
         for (Turno t : colaActualizada) {
-            if (t.getEstadoTurno() == EstadoTurno.CONFIRMADO
-                    || t.getEstadoTurno() == EstadoTurno.EN_COLA
+            if (t.getEstadoTurno() == EstadoTurno.EN_COLA
                     || t.getEstadoTurno() == EstadoTurno.REANUDADO) {
 
                 t.setEstadoTurno(EstadoTurno.EN_ATENCION);
-                return turnoRepository.save(t);
+                Turno turnoGuardado = turnoRepository.save(t);
+
+                registrarHistorial(
+                        "SIGUIENTE_TURNO",
+                        "El turno " + turnoGuardado.getNumeroTurno() + " pasó a EN_ATENCION",
+                        turnoGuardado.getId()
+                );
+
+                return turnoGuardado;
             }
         }
 
@@ -330,8 +390,17 @@ public class TurnoServiceImpl implements TurnoService {
 
         turno.setEstadoTurno(EstadoTurno.REANUDADO);
 
-        return turnoRepository.save(turno);
+        Turno turnoGuardado = turnoRepository.save(turno);
+
+        registrarHistorial(
+                "REANUDACION_TURNO",
+                "El turno " + turnoGuardado.getNumeroTurno() + " volvió a la cola como REANUDADO",
+                turnoGuardado.getId()
+        );
+
+        return turnoGuardado;
     }
+
 
     // =========================
     // MÉTODOS AUXILIARES
@@ -372,5 +441,33 @@ public class TurnoServiceImpl implements TurnoService {
 
         // Prioridad 3 -> sin cita
         return 3;
+    }
+
+    // Registrar acción en el historial
+    private void registrarHistorial(String accion, String descripcion, Long idEntidad) {
+        HistorialAccion historialAccion = new HistorialAccion();
+
+        historialAccion.setAccion(accion);
+        historialAccion.setDescripcion(descripcion);
+        historialAccion.setEntidadAfectada("Turno");
+        historialAccion.setIdEntidad(idEntidad);
+        historialAccion.setUsuarioResponsable(null);
+
+        historialAccionService.save(historialAccion);
+    }
+
+    // Obtener id del usuario autenticado
+    private Long obtenerIdUsuarioActual() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        String email = authentication.getName();
+
+        return usuarioRepository.findByEmail(email)
+                .map(Usuario::getId)
+                .orElse(null);
     }
 }

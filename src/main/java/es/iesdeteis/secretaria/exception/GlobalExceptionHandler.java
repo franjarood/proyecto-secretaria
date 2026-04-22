@@ -159,4 +159,33 @@ public class GlobalExceptionHandler {
     }
 
 
+    // PreMatricula no encontrada
+    @ExceptionHandler(PreMatriculaNoEncontradaException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handlePreMatriculaNoEncontrada(PreMatriculaNoEncontradaException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("mensaje", ex.getMessage());
+        error.put("error", "PreMatricula no encontrada");
+        error.put("status", 404);
+        error.put("timestamp", LocalDateTime.now());
+
+        return error;
+    }
+
+    // PreMatricula duplicada
+    @ExceptionHandler(PreMatriculaDuplicadaException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handlePreMatriculaDuplicada(PreMatriculaDuplicadaException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("mensaje", ex.getMessage());
+        error.put("error", "PreMatricula duplicada");
+        error.put("status", 400);
+        error.put("timestamp", LocalDateTime.now());
+
+        return error;
+    }
+
+
 }
