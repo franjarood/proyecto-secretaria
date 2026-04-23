@@ -1,5 +1,6 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.dto.ReservaTurnoCreateDTO;
 import es.iesdeteis.secretaria.exception.ReservaNoEncontradaException;
 import es.iesdeteis.secretaria.model.EstadoReserva;
 import es.iesdeteis.secretaria.model.ReservaTurno;
@@ -48,6 +49,26 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
     }
 
     @Override
+    public ReservaTurno saveFromDTO(ReservaTurnoCreateDTO dto) {
+
+        ReservaTurno reservaTurno = new ReservaTurno();
+
+        reservaTurno.setFechaCita(dto.getFechaCita());
+        reservaTurno.setHoraCita(dto.getHoraCita());
+        reservaTurno.setOrigenTurno(dto.getOrigenTurno());
+        reservaTurno.setEstadoReserva(EstadoReserva.PENDIENTE);
+
+        // Generar código de referencia simple
+        reservaTurno.setCodigoReferencia("RES-" + System.currentTimeMillis());
+
+        // Cargar trámites completos desde BD
+        List<TipoTramite> tramitesCompletos = cargarTramitesPorIds(dto.getTiposTramiteIds());
+        reservaTurno.setTiposTramite(tramitesCompletos);
+
+        return reservaTurnoRepository.save(reservaTurno);
+    }
+
+    @Override
     public ReservaTurno update(Long id, ReservaTurno reservaTurnoActualizada) {
         ReservaTurno reservaTurno = reservaTurnoRepository.findById(id)
                 .orElseThrow(() -> new ReservaNoEncontradaException("Reserva no encontrada"));
@@ -73,13 +94,32 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
         reservaTurnoRepository.deleteById(id);
     }
 
-    // Cargar trámites completos desde BD
+    // =========================
+    // MÉTODOS AUXILIARES
+    // =========================
+
+    // Cargar trámites completos desde BD a partir de la entidad
     private List<TipoTramite> cargarTramitesCompletos(List<TipoTramite> tiposTramite) {
         List<TipoTramite> tramitesCompletos = new ArrayList<>();
 
         if (tiposTramite != null) {
             for (TipoTramite t : tiposTramite) {
                 TipoTramite tramiteBD = tipoTramiteRepository.findById(t.getId())
+                        .orElseThrow(() -> new RuntimeException("Tipo de trámite no encontrado"));
+                tramitesCompletos.add(tramiteBD);
+            }
+        }
+
+        return tramitesCompletos;
+    }
+
+    // Cargar trámites completos desde BD a partir de IDs
+    private List<TipoTramite> cargarTramitesPorIds(List<Long> tiposTramiteIds) {
+        List<TipoTramite> tramitesCompletos = new ArrayList<>();
+
+        if (tiposTramiteIds != null) {
+            for (Long id : tiposTramiteIds) {
+                TipoTramite tramiteBD = tipoTramiteRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Tipo de trámite no encontrado"));
                 tramitesCompletos.add(tramiteBD);
             }

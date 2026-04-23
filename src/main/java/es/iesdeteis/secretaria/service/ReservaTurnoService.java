@@ -1,5 +1,6 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.dto.ReservaTurnoCreateDTO;
 import es.iesdeteis.secretaria.model.ReservaTurno;
 
 import java.util.List;
@@ -15,6 +16,9 @@ public interface ReservaTurnoService {
 
     // Crear nueva reserva
     ReservaTurno save(ReservaTurno reservaTurno);
+
+    // Crear nueva reserva desde DTO
+    ReservaTurno saveFromDTO(ReservaTurnoCreateDTO dto);
 
     // Actualizar reserva existente
     ReservaTurno update(Long id, ReservaTurno reservaTurno);

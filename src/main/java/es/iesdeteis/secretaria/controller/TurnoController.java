@@ -3,6 +3,7 @@ package es.iesdeteis.secretaria.controller;
 import es.iesdeteis.secretaria.dto.EstadoTurnoDTO;
 import es.iesdeteis.secretaria.dto.EstadoTurnoResponseDTO;
 import es.iesdeteis.secretaria.dto.PosicionTurnoDTO;
+import es.iesdeteis.secretaria.dto.TurnoColaDTO;
 import es.iesdeteis.secretaria.exception.TurnoNoEncontradoException;
 import es.iesdeteis.secretaria.model.Turno;
 import es.iesdeteis.secretaria.service.TurnoService;
@@ -72,8 +73,16 @@ public class TurnoController {
 
     // Obtener cola ordenada
     @GetMapping("/cola")
-    public List<Turno> getQueue() {
-        return turnoService.getQueue();
+    public List<TurnoColaDTO> getQueue() {
+
+        return turnoService.getQueue().stream()
+                .map(t -> new TurnoColaDTO(
+                        t.getNumeroTurno(),
+                        t.getEstadoTurno().name(),
+                        t.getPrioridad(),
+                        t.getDuracionEstimada()
+                ))
+                .toList();
     }
 
     // Obtener posición del turno en la cola
