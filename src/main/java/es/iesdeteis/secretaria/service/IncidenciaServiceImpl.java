@@ -1,5 +1,6 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.dto.IncidenciaCreateDTO;
 import es.iesdeteis.secretaria.exception.IncidenciaNoEncontradaException;
 import es.iesdeteis.secretaria.exception.TurnoNoEncontradoException;
 import es.iesdeteis.secretaria.model.Incidencia;
@@ -14,13 +15,21 @@ import java.util.Optional;
 @Service
 public class IncidenciaServiceImpl implements IncidenciaService {
 
+    // ATRIBUTOS
+
     private final IncidenciaRepository incidenciaRepository;
     private final TurnoRepository turnoRepository;
+
+
+    // CONSTRUCTOR
 
     public IncidenciaServiceImpl(IncidenciaRepository incidenciaRepository, TurnoRepository turnoRepository) {
         this.incidenciaRepository = incidenciaRepository;
         this.turnoRepository = turnoRepository;
     }
+
+
+    // MÉTODOS
 
     @Override
     public List<Incidencia> findAll() {
@@ -40,6 +49,22 @@ public class IncidenciaServiceImpl implements IncidenciaService {
                     .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
             incidencia.setTurno(turno);
         }
+
+        return incidenciaRepository.save(incidencia);
+    }
+
+    @Override
+    public Incidencia saveFromDTO(IncidenciaCreateDTO dto) {
+
+        Turno turno = turnoRepository.findById(dto.getTurnoId())
+                .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
+
+        Incidencia incidencia = new Incidencia();
+        incidencia.setTipo(dto.getTipo());
+        incidencia.setDescripcion(dto.getDescripcion());
+        incidencia.setResuelta(dto.getResuelta());
+        incidencia.setAccionTomada(dto.getAccionTomada());
+        incidencia.setTurno(turno);
 
         return incidenciaRepository.save(incidencia);
     }

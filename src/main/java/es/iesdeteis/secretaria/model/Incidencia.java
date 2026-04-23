@@ -1,53 +1,64 @@
 package es.iesdeteis.secretaria.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
-
-// IMPORTANTE:
-// Esto evita bucles infinitos al devolver JSON (Turno → Incidencias → Turno...)
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "incidencias")
 public class Incidencia {
 
-    // =========================
     // ATRIBUTOS
-    // =========================
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "El tipo de incidencia no puede estar vacío")
     private String tipo;
 
+    @NotBlank(message = "La descripción no puede estar vacía")
     @Column(length = 500)
     private String descripcion;
 
     private LocalDateTime fecha;
 
+    @NotNull(message = "El estado de resolución no puede ser nulo")
     private Boolean resuelta;
 
     private String accionTomada;
 
-    // =========================
-    // RELACIONES
-    // =========================
 
-    @JsonBackReference // Evita recursividad infinita al convertir a JSON
+    // RELACIONES
+
+    @NotNull(message = "El turno no puede ser nulo")
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "turno_id")
     private Turno turno;
 
-    // =========================
+
     // CONSTRUCTORES
-    // =========================
 
     public Incidencia() {
     }
 
-    public Incidencia(String tipo, String descripcion, Boolean resuelta, String accionTomada, Turno turno) {
+    public Incidencia(Long id, String tipo, String descripcion, LocalDateTime fecha,
+                      Boolean resuelta, String accionTomada, Turno turno) {
+        this.id = id;
+        this.tipo = tipo;
+        this.descripcion = descripcion;
+        this.fecha = fecha;
+        this.resuelta = resuelta;
+        this.accionTomada = accionTomada;
+        this.turno = turno;
+    }
+
+    public Incidencia(String tipo, String descripcion, Boolean resuelta,
+                      String accionTomada, Turno turno) {
         this.tipo = tipo;
         this.descripcion = descripcion;
         this.resuelta = resuelta;
@@ -55,18 +66,16 @@ public class Incidencia {
         this.turno = turno;
     }
 
-    // =========================
+
     // AUDITORÍA AUTOMÁTICA
-    // =========================
 
     @PrePersist
     public void prePersist() {
         this.fecha = LocalDateTime.now();
     }
 
-    // =========================
+
     // GETTERS Y SETTERS
-    // =========================
 
     public Long getId() {
         return id;
@@ -115,10 +124,6 @@ public class Incidencia {
     public void setTurno(Turno turno) {
         this.turno = turno;
     }
-
-    // =========================
-    // TO STRING
-    // =========================
 
     @Override
     public String toString() {

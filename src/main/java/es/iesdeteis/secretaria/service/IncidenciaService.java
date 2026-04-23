@@ -1,5 +1,6 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.dto.IncidenciaCreateDTO;
 import es.iesdeteis.secretaria.model.Incidencia;
 
 import java.util.List;
@@ -15,6 +16,9 @@ public interface IncidenciaService {
 
     // Crear nueva incidencia
     Incidencia save(Incidencia incidencia);
+
+    // Crear nueva incidencia desde DTO
+    Incidencia saveFromDTO(IncidenciaCreateDTO dto);
 
     // Actualizar incidencia existente
     Incidencia update(Long id, Incidencia incidencia);

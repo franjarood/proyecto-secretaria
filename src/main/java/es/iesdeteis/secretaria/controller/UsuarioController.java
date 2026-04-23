@@ -5,6 +5,7 @@ import es.iesdeteis.secretaria.exception.UsuarioNoEncontradoException;
 import es.iesdeteis.secretaria.model.Usuario;
 import es.iesdeteis.secretaria.service.UsuarioService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,28 +47,29 @@ public class UsuarioController {
         return convertirAResponseDTO(usuario);
     }
 
-    // Crear usuario (aquí sí usamos entidad completa)
+    // Crear usuario (sin devolver password)
     @PostMapping
-    public Usuario saveUsuario(@Valid @RequestBody Usuario usuario) {
-        return usuarioService.save(usuario);
+    public UsuarioResponseDTO saveUsuario(@Valid @RequestBody Usuario usuario) {
+        Usuario usuarioGuardado = usuarioService.save(usuario);
+        return convertirAResponseDTO(usuarioGuardado);
     }
 
-    // Actualizar usuario
+    // Actualizar usuario (sin devolver password)
     @PutMapping("/{id}")
-    public Usuario updateUsuario(@PathVariable Long id, @Valid @RequestBody Usuario usuario) {
-        return usuarioService.update(id, usuario);
+    public UsuarioResponseDTO updateUsuario(@PathVariable Long id, @Valid @RequestBody Usuario usuario) {
+        Usuario usuarioActualizado = usuarioService.update(id, usuario);
+        return convertirAResponseDTO(usuarioActualizado);
     }
 
     // Eliminar usuario
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteUsuario(@PathVariable Long id) {
         usuarioService.deleteById(id);
     }
 
 
-    // =========================
     // MÉTODOS AUXILIARES
-    // =========================
 
     // Convertir entidad Usuario a DTO (sin password)
     private UsuarioResponseDTO convertirAResponseDTO(Usuario usuario) {

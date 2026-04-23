@@ -4,5 +4,6 @@ public enum RolUsuario {
     ALUMNO,
     SECRETARIA,
     CONSERJE,
-    ADMIN
+    ADMIN,
+    PROFESOR
 }
