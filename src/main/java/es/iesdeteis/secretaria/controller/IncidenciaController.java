@@ -6,6 +6,7 @@ import es.iesdeteis.secretaria.exception.IncidenciaNoEncontradaException;
 import es.iesdeteis.secretaria.model.Incidencia;
 import es.iesdeteis.secretaria.service.IncidenciaService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class IncidenciaController {
     // MÉTODOS
 
     // Obtener todas las incidencias
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE')")
     @GetMapping
     public List<IncidenciaResponseDTO> getIncidencias() {
         return incidenciaService.findAll().stream()
@@ -37,6 +39,7 @@ public class IncidenciaController {
     }
 
     // Obtener incidencia por ID
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE')")
     @GetMapping("/{id}")
     public IncidenciaResponseDTO getIncidenciaById(@PathVariable Long id) {
         Incidencia incidencia = incidenciaService.findById(id)
@@ -46,6 +49,7 @@ public class IncidenciaController {
     }
 
     // Crear incidencia
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE')")
     @PostMapping
     public IncidenciaResponseDTO saveIncidencia(@Valid @RequestBody IncidenciaCreateDTO dto) {
         Incidencia incidenciaGuardada = incidenciaService.saveFromDTO(dto);
@@ -53,21 +57,22 @@ public class IncidenciaController {
     }
 
     // Actualizar incidencia
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA')")
     @PutMapping("/{id}")
-    public Incidencia updateIncidencia(@PathVariable Long id, @Valid @RequestBody Incidencia incidencia) {
-        return incidenciaService.update(id, incidencia);
+    public IncidenciaResponseDTO updateIncidencia(@PathVariable Long id, @Valid @RequestBody Incidencia incidencia) {
+        Incidencia incidenciaActualizada = incidenciaService.update(id, incidencia);
+        return convertirAResponseDTO(incidenciaActualizada);
     }
 
     // Eliminar incidencia
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteIncidencia(@PathVariable Long id) {
         incidenciaService.deleteById(id);
     }
 
 
-    // =========================
     // MÉTODOS AUXILIARES
-    // =========================
 
     // Convertir entidad Incidencia a DTO de respuesta
     private IncidenciaResponseDTO convertirAResponseDTO(Incidencia incidencia) {

@@ -14,6 +14,12 @@ public interface ReservaTurnoService {
     // Buscar reserva por ID
     Optional<ReservaTurno> findById(Long id);
 
+    // Obtener reservas según el rol del usuario autenticado
+    List<ReservaTurno> findReservasSegunRol();
+
+    // Obtener una reserva por ID según el rol del usuario autenticado
+    Optional<ReservaTurno> findReservaByIdSegunRol(Long id);
+
     // Crear nueva reserva
     ReservaTurno save(ReservaTurno reservaTurno);
 

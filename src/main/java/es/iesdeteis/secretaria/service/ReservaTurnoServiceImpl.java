@@ -5,8 +5,12 @@ import es.iesdeteis.secretaria.exception.ReservaNoEncontradaException;
 import es.iesdeteis.secretaria.model.EstadoReserva;
 import es.iesdeteis.secretaria.model.ReservaTurno;
 import es.iesdeteis.secretaria.model.TipoTramite;
+import es.iesdeteis.secretaria.model.Usuario;
 import es.iesdeteis.secretaria.repository.ReservaTurnoRepository;
 import es.iesdeteis.secretaria.repository.TipoTramiteRepository;
+import es.iesdeteis.secretaria.repository.UsuarioRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,11 +22,14 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
 
     private final ReservaTurnoRepository reservaTurnoRepository;
     private final TipoTramiteRepository tipoTramiteRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public ReservaTurnoServiceImpl(ReservaTurnoRepository reservaTurnoRepository,
-                                   TipoTramiteRepository tipoTramiteRepository) {
+                                   TipoTramiteRepository tipoTramiteRepository,
+                                   UsuarioRepository usuarioRepository) {
         this.reservaTurnoRepository = reservaTurnoRepository;
         this.tipoTramiteRepository = tipoTramiteRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
@@ -33,6 +40,40 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
     @Override
     public Optional<ReservaTurno> findById(Long id) {
         return reservaTurnoRepository.findById(id);
+    }
+
+    @Override
+    public List<ReservaTurno> findReservasSegunRol() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        boolean esAdminOSecretaria = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_SECRETARIA"));
+
+        if (esAdminOSecretaria) {
+            return reservaTurnoRepository.findAll();
+        }
+
+        return reservaTurnoRepository.findByUsuarioEmail(email);
+    }
+
+    @Override
+    public Optional<ReservaTurno> findReservaByIdSegunRol(Long id) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        boolean esAdminOSecretaria = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_SECRETARIA"));
+
+        if (esAdminOSecretaria) {
+            return reservaTurnoRepository.findById(id);
+        }
+
+        return reservaTurnoRepository.findByIdAndUsuarioEmail(id, email);
     }
 
     @Override
@@ -64,6 +105,15 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
         // Cargar trámites completos desde BD
         List<TipoTramite> tramitesCompletos = cargarTramitesPorIds(dto.getTiposTramiteIds());
         reservaTurno.setTiposTramite(tramitesCompletos);
+
+        // Obtener usuario autenticado y asignarlo a la reserva
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        reservaTurno.setUsuario(usuario);
 
         return reservaTurnoRepository.save(reservaTurno);
     }

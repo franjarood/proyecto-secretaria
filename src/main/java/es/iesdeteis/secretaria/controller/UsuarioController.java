@@ -29,6 +29,7 @@ public class UsuarioController {
     // MÉTODOS
 
     // Obtener todos los usuarios (sin password)
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<UsuarioResponseDTO> getUsuarios() {
 
@@ -38,6 +39,7 @@ public class UsuarioController {
     }
 
     // Obtener usuario por ID (sin password)
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public UsuarioResponseDTO getUsuarioById(@PathVariable Long id) {
 
@@ -48,6 +50,7 @@ public class UsuarioController {
     }
 
     // Crear usuario (sin devolver password)
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public UsuarioResponseDTO saveUsuario(@Valid @RequestBody Usuario usuario) {
         Usuario usuarioGuardado = usuarioService.save(usuario);
@@ -55,6 +58,7 @@ public class UsuarioController {
     }
 
     // Actualizar usuario (sin devolver password)
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public UsuarioResponseDTO updateUsuario(@PathVariable Long id, @Valid @RequestBody Usuario usuario) {
         Usuario usuarioActualizado = usuarioService.update(id, usuario);

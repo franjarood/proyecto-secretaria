@@ -48,6 +48,10 @@ public class ReservaTurno {
     )
     private List<TipoTramite> tiposTramite;
 
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     // =========================
     // AUDITORÍA
     // =========================
@@ -65,13 +69,15 @@ public class ReservaTurno {
     }
 
     public ReservaTurno(LocalDate fechaCita, LocalTime horaCita, String codigoReferencia,
-                        String origenTurno, EstadoReserva estadoReserva, List<TipoTramite> tiposTramite) {
+                        String origenTurno, EstadoReserva estadoReserva,
+                        List<TipoTramite> tiposTramite, Usuario usuario) {
         this.fechaCita = fechaCita;
         this.horaCita = horaCita;
         this.codigoReferencia = codigoReferencia;
         this.origenTurno = origenTurno;
         this.estadoReserva = estadoReserva;
         this.tiposTramite = tiposTramite;
+        this.usuario = usuario;
     }
 
     // =========================
@@ -143,6 +149,14 @@ public class ReservaTurno {
 
     public void setTiposTramite(List<TipoTramite> tiposTramite) {
         this.tiposTramite = tiposTramite;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public LocalDateTime getCreatedAt() {
