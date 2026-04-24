@@ -33,20 +33,20 @@ public class TurnoController {
 
     // MÉTODOS
 
-    // Obtener todos los turnos
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE')")
+    // Obtener turnos según el rol del usuario autenticado
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
     @GetMapping
     public List<TurnoResponseDTO> getTurnos() {
-        return turnoService.findAll().stream()
+        return turnoService.findTurnosSegunRol().stream()
                 .map(this::convertirAResponseDTO)
                 .toList();
     }
 
-    // Obtener turno por ID
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE')")
+    // Obtener turno por ID según el rol del usuario autenticado
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
     @GetMapping("/{id}")
     public TurnoResponseDTO getTurnoById(@PathVariable Long id) {
-        Turno turno = turnoService.findById(id)
+        Turno turno = turnoService.findTurnoByIdSegunRol(id)
                 .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
 
         return convertirAResponseDTO(turno);
@@ -128,7 +128,7 @@ public class TurnoController {
     @GetMapping("/{id}/estado")
     public EstadoTurnoResponseDTO getEstado(@PathVariable Long id) {
 
-        Turno turno = turnoService.findById(id)
+        Turno turno = turnoService.findTurnoByIdSegunRol(id)
                 .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
 
         int posicion = 0;

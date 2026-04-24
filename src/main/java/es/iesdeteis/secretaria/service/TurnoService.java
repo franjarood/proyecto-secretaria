@@ -51,4 +51,10 @@ public interface TurnoService {
 
     // Reanudar turno y devolverlo a la cola
     Turno reanudarTurno(Long id);
+
+    // Obtener turnos según el rol del usuario autenticado
+    List<Turno> findTurnosSegunRol();
+
+    // Obtener un turno por ID según el rol del usuario autenticado
+    Optional<Turno> findTurnoByIdSegunRol(Long id);
 }

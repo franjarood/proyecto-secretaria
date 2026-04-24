@@ -58,6 +58,42 @@ public class TurnoServiceImpl implements TurnoService {
     }
 
     @Override
+    public List<Turno> findTurnosSegunRol() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        boolean esPersonalCentro = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_SECRETARIA")
+                        || a.getAuthority().equals("ROLE_CONSERJE"));
+
+        if (esPersonalCentro) {
+            return turnoRepository.findAll();
+        }
+
+        return turnoRepository.findByReservaTurnoUsuarioEmail(email);
+    }
+
+    @Override
+    public Optional<Turno> findTurnoByIdSegunRol(Long id) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        boolean esPersonalCentro = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_SECRETARIA")
+                        || a.getAuthority().equals("ROLE_CONSERJE"));
+
+        if (esPersonalCentro) {
+            return turnoRepository.findById(id);
+        }
+
+        return turnoRepository.findByIdAndReservaTurnoUsuarioEmail(id, email);
+    }
+
+    @Override
     public Turno save(Turno turno) {
 
         // Cargar trámites completos desde BD
@@ -208,8 +244,7 @@ public class TurnoServiceImpl implements TurnoService {
     @Override
     public Integer calculateRealWaitingTime(Long id) {
 
-        Turno turno = turnoRepository.findById(id)
-                .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
+        Turno turno = obtenerTurnoSeguro(id);
 
         List<Turno> cola = getQueue();
 
@@ -245,10 +280,12 @@ public class TurnoServiceImpl implements TurnoService {
     @Override
     public int getPositionInQueue(Long id) {
 
+        Turno turno = obtenerTurnoSeguro(id);
+
         List<Turno> cola = getQueue();
 
         for (int i = 0; i < cola.size(); i++) {
-            if (cola.get(i).getId().equals(id)) {
+            if (cola.get(i).getId().equals(turno.getId())) {
                 return i + 1;
             }
         }
@@ -441,6 +478,26 @@ public class TurnoServiceImpl implements TurnoService {
 
         // Prioridad 3 -> sin cita
         return 3;
+    }
+
+    // Obtener turno validando permisos del usuario autenticado
+    private Turno obtenerTurnoSeguro(Long id) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        boolean esPersonalCentro = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_SECRETARIA")
+                        || a.getAuthority().equals("ROLE_CONSERJE"));
+
+        if (esPersonalCentro) {
+            return turnoRepository.findById(id)
+                    .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
+        }
+
+        return turnoRepository.findByIdAndReservaTurnoUsuarioEmail(id, email)
+                .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
     }
 
     // Registrar acción en el historial
