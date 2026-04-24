@@ -187,5 +187,47 @@ public class GlobalExceptionHandler {
         return error;
     }
 
+    // Documento no encontrado
+    @ExceptionHandler(DocumentoNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleDocumentoNoEncontrado(DocumentoNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("mensaje", ex.getMessage());
+        error.put("error", "Documento no encontrado");
+        error.put("status", 404);
+        error.put("timestamp", LocalDateTime.now());
+
+        return error;
+    }
+
+    // Documento no pertenece al usuario
+    @ExceptionHandler(DocumentoNoPerteneceUsuarioException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleDocumentoNoPerteneceUsuario(DocumentoNoPerteneceUsuarioException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("mensaje", ex.getMessage());
+        error.put("error", "Acceso denegado al documento");
+        error.put("status", 403);
+        error.put("timestamp", LocalDateTime.now());
+
+        return error;
+    }
+
+    // Documento no revisable
+    @ExceptionHandler(DocumentoNoRevisableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleDocumentoNoRevisable(DocumentoNoRevisableException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("mensaje", ex.getMessage());
+        error.put("error", "Documento no se puede revisar");
+        error.put("status", 400);
+        error.put("timestamp", LocalDateTime.now());
+
+        return error;
+    }
+
 
 }
