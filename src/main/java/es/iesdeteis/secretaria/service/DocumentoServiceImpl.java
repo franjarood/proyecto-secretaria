@@ -15,7 +15,9 @@ import java.util.List;
 @Service
 public class DocumentoServiceImpl implements DocumentoService {
 
+    // =========================
     // ATRIBUTOS
+    // =========================
 
     private final DocumentoRepository documentoRepository;
     private final UsuarioRepository usuarioRepository;
@@ -23,7 +25,9 @@ public class DocumentoServiceImpl implements DocumentoService {
     private final TurnoRepository turnoRepository;
 
 
+    // =========================
     // CONSTRUCTOR
+    // =========================
 
     public DocumentoServiceImpl(DocumentoRepository documentoRepository,
                                 UsuarioRepository usuarioRepository,
@@ -36,7 +40,9 @@ public class DocumentoServiceImpl implements DocumentoService {
     }
 
 
+    // =========================
     // MÉTODOS PRINCIPALES
+    // =========================
 
     @Override
     public DocumentoResponseDTO crearDocumento(DocumentoCreateDTO dto) {
@@ -77,8 +83,7 @@ public class DocumentoServiceImpl implements DocumentoService {
 
     @Override
     public DocumentoResponseDTO obtenerPorId(Long id) {
-        Documento documento = documentoRepository.findById(id)
-                .orElseThrow(() -> new DocumentoNoEncontradoException("No existe el documento con id: " + id));
+        Documento documento = obtenerDocumentoSeguro(id);
 
         return convertirADTO(documento);
     }
@@ -124,7 +129,9 @@ public class DocumentoServiceImpl implements DocumentoService {
     }
 
 
+    // =========================
     // MÉTODOS DE REVISIÓN
+    // =========================
 
     @Override
     public DocumentoResponseDTO validarDocumento(Long id, DocumentoRevisionDTO dto) {
@@ -164,20 +171,46 @@ public class DocumentoServiceImpl implements DocumentoService {
     }
 
 
+    // =========================
     // ELIMINAR
+    // =========================
 
     @Override
     public void eliminar(Long id) {
-        Documento documento = obtenerDocumento(id);
+        Documento documento = obtenerDocumentoSeguro(id);
+
         documentoRepository.delete(documento);
     }
 
 
+    // =========================
     // MÉTODOS AUXILIARES
+    // =========================
 
     private Documento obtenerDocumento(Long id) {
         return documentoRepository.findById(id)
                 .orElseThrow(() -> new DocumentoNoEncontradoException("No existe el documento con id: " + id));
+    }
+
+    private Documento obtenerDocumentoSeguro(Long id) {
+
+        Documento documento = documentoRepository.findById(id)
+                .orElseThrow(() -> new DocumentoNoEncontradoException("No existe el documento con id: " + id));
+
+        Usuario usuarioActual = obtenerUsuarioAutenticado();
+
+        if (usuarioActual.getRol().name().equals("ALUMNO")) {
+
+            if (documento.getUsuario() == null ||
+                    !documento.getUsuario().getId().equals(usuarioActual.getId())) {
+
+                throw new DocumentoNoPerteneceUsuarioException(
+                        "No tienes permiso para acceder a este documento"
+                );
+            }
+        }
+
+        return documento;
     }
 
     private Usuario obtenerUsuarioAutenticado() {
@@ -227,5 +260,16 @@ public class DocumentoServiceImpl implements DocumentoService {
         }
 
         return dto;
+    }
+
+    @Override
+    public List<DocumentoResponseDTO> obtenerMisDocumentos() {
+
+        Usuario usuarioActual = obtenerUsuarioAutenticado();
+
+        return documentoRepository.findByUsuarioId(usuarioActual.getId())
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
     }
 }

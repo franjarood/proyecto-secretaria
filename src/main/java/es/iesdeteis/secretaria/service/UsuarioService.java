@@ -1,5 +1,6 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.dto.UsuarioActualDTO;
 import es.iesdeteis.secretaria.model.Usuario;
 
 import java.util.List;
@@ -20,4 +21,6 @@ public interface UsuarioService {
     Usuario update(Long id, Usuario usuarioActualizado);
 
     void deleteById(Long id);
+
+    UsuarioActualDTO obtenerUsuarioActual();
 }

@@ -79,6 +79,10 @@ public class Turno {
     @OneToMany(mappedBy = "turno", cascade = CascadeType.ALL)
     private List<Incidencia> incidencias;
 
+    @JsonManagedReference(value = "turno-documentos")
+    @OneToMany(mappedBy = "turno", cascade = CascadeType.ALL)
+    private List<Documento> documentos;
+
     // =========================
     // AUDITORÍA
     // =========================
@@ -262,6 +266,14 @@ public class Turno {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public List<Documento> getDocumentos() {
+        return documentos;
+    }
+
+    public void setDocumentos(List<Documento> documentos) {
+        this.documentos = documentos;
     }
 
     // =========================

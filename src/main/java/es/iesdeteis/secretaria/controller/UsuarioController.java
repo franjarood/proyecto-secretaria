@@ -1,5 +1,6 @@
 package es.iesdeteis.secretaria.controller;
 
+import es.iesdeteis.secretaria.dto.UsuarioActualDTO;
 import es.iesdeteis.secretaria.dto.UsuarioResponseDTO;
 import es.iesdeteis.secretaria.exception.UsuarioNoEncontradoException;
 import es.iesdeteis.secretaria.model.Usuario;
@@ -74,6 +75,12 @@ public class UsuarioController {
 
 
     // MÉTODOS AUXILIARES
+
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    public UsuarioActualDTO obtenerUsuarioActual() {
+        return usuarioService.obtenerUsuarioActual();
+    }
 
     // Convertir entidad Usuario a DTO (sin password)
     private UsuarioResponseDTO convertirAResponseDTO(Usuario usuario) {

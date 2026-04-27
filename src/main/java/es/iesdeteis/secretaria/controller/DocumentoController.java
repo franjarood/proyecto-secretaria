@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/documentos")
+@RequestMapping("/documentos")
 public class DocumentoController {
 
     // ATRIBUTOS
@@ -72,6 +72,12 @@ public class DocumentoController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA')")
     public List<DocumentoResponseDTO> listarPorEstado(@PathVariable EstadoDocumento estado) {
         return documentoService.listarPorEstado(estado);
+    }
+
+    @GetMapping("/mis-documentos")
+    @PreAuthorize("hasRole('ALUMNO')")
+    public List<DocumentoResponseDTO> obtenerMisDocumentos() {
+        return documentoService.obtenerMisDocumentos();
     }
 
 

@@ -1,5 +1,6 @@
 package es.iesdeteis.secretaria.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -53,10 +54,12 @@ public class Documento {
     @JoinColumn(name = "revisado_por_id")
     private Usuario revisadoPor; // quien revisa el documento
 
+    @JsonBackReference(value = "prematricula-documentos")
     @ManyToOne
     @JoinColumn(name = "prematricula_id")
     private PreMatricula preMatricula;
 
+    @JsonBackReference(value = "turno-documentos")
     @ManyToOne
     @JoinColumn(name = "turno_id")
     private Turno turno;

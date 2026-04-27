@@ -1,5 +1,7 @@
 package es.iesdeteis.secretaria.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import java.util.List;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -53,6 +55,12 @@ public class PreMatricula {
     // Observaciones
 
     private String observaciones;
+
+    // Relaciones
+
+    @JsonManagedReference(value = "prematricula-documentos")
+    @OneToMany(mappedBy = "preMatricula", cascade = CascadeType.ALL)
+    private List<Documento> documentos;
 
 
     // CONSTRUCTORES
@@ -191,6 +199,14 @@ public class PreMatricula {
 
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+
+    public List<Documento> getDocumentos() {
+        return documentos;
+    }
+
+    public void setDocumentos(List<Documento> documentos) {
+        this.documentos = documentos;
     }
 
     @Override
