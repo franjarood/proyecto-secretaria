@@ -150,6 +150,15 @@ public class IncidenciaServiceImpl implements IncidenciaService {
                 "/incidencias",
                 usuariosCentro
         );
+
+        notificacionService.enviarAvisoEmailCentro(
+                "Nueva incidencia interna registrada",
+                "Se ha registrado una nueva incidencia interna.\n\n"
+                        + "ID incidencia: " + incidencia.getId() + "\n"
+                        + "Tipo: " + incidencia.getTipo() + "\n"
+                        + "Descripción: " + incidencia.getDescripcion()
+        );
+
     }
 
     private void notificarIncidenciaResuelta(Incidencia incidencia) {

@@ -40,4 +40,6 @@ public interface NotificacionService {
                                        String urlDestino,
                                        List<Usuario> usuarios);
 
+    void enviarAvisoEmailCentro(String asunto, String mensaje);
+
 }

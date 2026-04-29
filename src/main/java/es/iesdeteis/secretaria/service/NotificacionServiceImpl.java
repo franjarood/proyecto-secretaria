@@ -10,6 +10,7 @@ import es.iesdeteis.secretaria.model.TipoNotificacion;
 import es.iesdeteis.secretaria.model.Usuario;
 import es.iesdeteis.secretaria.repository.NotificacionRepository;
 import es.iesdeteis.secretaria.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,9 @@ public class NotificacionServiceImpl implements NotificacionService {
     private final NotificacionRepository notificacionRepository;
     private final UsuarioRepository usuarioRepository;
     private final EmailService emailService;
+
+    @Value("${app.email.centro}")
+    private String emailCentro;
 
 
     // =========================
@@ -182,6 +186,16 @@ public class NotificacionServiceImpl implements NotificacionService {
                     urlDestino,
                     usuario
             );
+        }
+    }
+
+    @Override
+    public void enviarAvisoEmailCentro(String asunto, String mensaje) {
+
+        try {
+            emailService.enviarEmail(emailCentro, asunto, mensaje);
+        } catch (Exception e) {
+            System.out.println("No se pudo enviar el email al centro: " + e.getMessage());
         }
     }
 
