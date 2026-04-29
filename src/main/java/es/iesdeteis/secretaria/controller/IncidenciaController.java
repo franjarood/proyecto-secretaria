@@ -78,7 +78,7 @@ public class IncidenciaController {
     private IncidenciaResponseDTO convertirAResponseDTO(Incidencia incidencia) {
         return new IncidenciaResponseDTO(
                 incidencia.getId(),
-                incidencia.getTipo(),
+                incidencia.getTipo().name(),
                 incidencia.getDescripcion(),
                 incidencia.getFecha(),
                 incidencia.getResuelta(),

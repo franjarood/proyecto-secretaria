@@ -2,8 +2,8 @@ package es.iesdeteis.secretaria.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
 
@@ -11,14 +11,17 @@ import java.time.LocalDateTime;
 @Table(name = "incidencias")
 public class Incidencia {
 
+    // =========================
     // ATRIBUTOS
+    // =========================
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El tipo de incidencia no puede estar vacío")
-    private String tipo;
+    @NotNull(message = "El tipo de incidencia no puede ser nulo")
+    @Enumerated(EnumType.STRING)
+    private TipoIncidencia tipo;
 
     @NotBlank(message = "La descripción no puede estar vacía")
     @Column(length = 500)
@@ -32,7 +35,9 @@ public class Incidencia {
     private String accionTomada;
 
 
+    // =========================
     // RELACIONES
+    // =========================
 
     @NotNull(message = "El turno no puede ser nulo")
     @JsonBackReference
@@ -41,12 +46,14 @@ public class Incidencia {
     private Turno turno;
 
 
+    // =========================
     // CONSTRUCTORES
+    // =========================
 
     public Incidencia() {
     }
 
-    public Incidencia(Long id, String tipo, String descripcion, LocalDateTime fecha,
+    public Incidencia(Long id, TipoIncidencia tipo, String descripcion, LocalDateTime fecha,
                       Boolean resuelta, String accionTomada, Turno turno) {
         this.id = id;
         this.tipo = tipo;
@@ -57,7 +64,7 @@ public class Incidencia {
         this.turno = turno;
     }
 
-    public Incidencia(String tipo, String descripcion, Boolean resuelta,
+    public Incidencia(TipoIncidencia tipo, String descripcion, Boolean resuelta,
                       String accionTomada, Turno turno) {
         this.tipo = tipo;
         this.descripcion = descripcion;
@@ -67,7 +74,9 @@ public class Incidencia {
     }
 
 
+    // =========================
     // AUDITORÍA AUTOMÁTICA
+    // =========================
 
     @PrePersist
     public void prePersist() {
@@ -75,17 +84,19 @@ public class Incidencia {
     }
 
 
+    // =========================
     // GETTERS Y SETTERS
+    // =========================
 
     public Long getId() {
         return id;
     }
 
-    public String getTipo() {
+    public TipoIncidencia getTipo() {
         return tipo;
     }
 
-    public void setTipo(String tipo) {
+    public void setTipo(TipoIncidencia tipo) {
         this.tipo = tipo;
     }
 

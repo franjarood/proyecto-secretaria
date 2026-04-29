@@ -1,14 +1,17 @@
 package es.iesdeteis.secretaria.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import es.iesdeteis.secretaria.model.TipoIncidencia;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public class IncidenciaCreateDTO {
 
+    // =========================
     // ATRIBUTOS
+    // =========================
 
-    @NotBlank(message = "El tipo de incidencia no puede estar vacío")
-    private String tipo;
+    @NotNull(message = "El tipo de incidencia no puede ser nulo")
+    private TipoIncidencia tipo;
 
     @NotBlank(message = "La descripción no puede estar vacía")
     private String descripcion;
@@ -22,12 +25,14 @@ public class IncidenciaCreateDTO {
     private Long turnoId;
 
 
+    // =========================
     // CONSTRUCTORES
+    // =========================
 
     public IncidenciaCreateDTO() {
     }
 
-    public IncidenciaCreateDTO(String tipo, String descripcion, Boolean resuelta,
+    public IncidenciaCreateDTO(TipoIncidencia tipo, String descripcion, Boolean resuelta,
                                String accionTomada, Long turnoId) {
         this.tipo = tipo;
         this.descripcion = descripcion;
@@ -37,13 +42,15 @@ public class IncidenciaCreateDTO {
     }
 
 
+    // =========================
     // GETTERS Y SETTERS
+    // =========================
 
-    public String getTipo() {
+    public TipoIncidencia getTipo() {
         return tipo;
     }
 
-    public void setTipo(String tipo) {
+    public void setTipo(TipoIncidencia tipo) {
         this.tipo = tipo;
     }
 

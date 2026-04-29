@@ -151,14 +151,16 @@ public class IncidenciaServiceImpl implements IncidenciaService {
                 usuariosCentro
         );
 
-        notificacionService.enviarAvisoEmailCentro(
-                "Nueva incidencia interna registrada",
-                "Se ha registrado una nueva incidencia interna.\n\n"
-                        + "ID incidencia: " + incidencia.getId() + "\n"
-                        + "Tipo: " + incidencia.getTipo() + "\n"
-                        + "Descripción: " + incidencia.getDescripcion()
-        );
-
+        if (incidencia.getTipo() == TipoIncidencia.CRITICA) {
+            notificacionService.enviarAvisoEmailCentro(
+                    "[SECRETARIA] Nueva incidencia crítica",
+                    "Se ha registrado una nueva incidencia crítica.\n\n"
+                            + "ID incidencia: " + incidencia.getId() + "\n"
+                            + "Tipo: " + incidencia.getTipo() + "\n"
+                            + "Descripción: " + incidencia.getDescripcion() + "\n"
+                            + "Fecha: " + incidencia.getFecha()
+            );
+        }
     }
 
     private void notificarIncidenciaResuelta(Incidencia incidencia) {
