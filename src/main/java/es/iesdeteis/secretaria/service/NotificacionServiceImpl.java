@@ -61,6 +61,8 @@ public class NotificacionServiceImpl implements NotificacionService {
 
         Notificacion notificacionGuardada = notificacionRepository.save(notificacion);
 
+        enviarEmailNotificacion(notificacionGuardada, usuario);
+
         return convertirAResponseDTO(notificacionGuardada);
     }
 
@@ -84,20 +86,7 @@ public class NotificacionServiceImpl implements NotificacionService {
 
         Notificacion notificacionGuardada = notificacionRepository.save(notificacion);
 
-        try {
-            emailService.enviarEmail(
-                    usuario.getEmail(),
-                    titulo,
-                    mensaje
-            );
-
-            notificacionGuardada.marcarEmailEnviado();
-            notificacionRepository.save(notificacionGuardada);
-
-        } catch (Exception e) {
-            // No rompe el sistema si falla el email
-            System.out.println("No se pudo enviar el email de la notificación: " + e.getMessage());
-        }
+        enviarEmailNotificacion(notificacionGuardada, usuario);
     }
 
 
@@ -112,6 +101,7 @@ public class NotificacionServiceImpl implements NotificacionService {
                 .map(this::convertirAResponseDTO)
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public List<NotificacionResponseDTO> obtenerMisNotificacionesNoLeidas(String emailUsuario) {
@@ -146,6 +136,7 @@ public class NotificacionServiceImpl implements NotificacionService {
         return convertirAResponseDTO(notificacionActualizada);
     }
 
+
     @Override
     public Long contarMisNotificacionesNoLeidas(String emailUsuario) {
 
@@ -168,6 +159,7 @@ public class NotificacionServiceImpl implements NotificacionService {
 
         notificacionRepository.saveAll(notificaciones);
     }
+
 
     @Override
     public void crearNotificacionParaUsuarios(String titulo,
@@ -197,6 +189,25 @@ public class NotificacionServiceImpl implements NotificacionService {
     // =========================
     // MÉTODOS PRIVADOS
     // =========================
+
+    private void enviarEmailNotificacion(Notificacion notificacion, Usuario usuario) {
+
+        try {
+            emailService.enviarEmail(
+                    usuario.getEmail(),
+                    notificacion.getTitulo(),
+                    notificacion.getMensaje()
+            );
+
+            notificacion.marcarEmailEnviado();
+            notificacionRepository.save(notificacion);
+
+        } catch (Exception e) {
+            // Si falla el email, no se rompe el sistema
+            System.out.println("No se pudo enviar el email de la notificación: " + e.getMessage());
+        }
+    }
+
 
     private NotificacionResponseDTO convertirAResponseDTO(Notificacion notificacion) {
 
