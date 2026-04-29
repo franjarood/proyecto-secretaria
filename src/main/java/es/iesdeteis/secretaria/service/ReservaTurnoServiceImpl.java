@@ -4,6 +4,7 @@ import es.iesdeteis.secretaria.dto.ReservaTurnoCreateDTO;
 import es.iesdeteis.secretaria.exception.ReservaNoEncontradaException;
 import es.iesdeteis.secretaria.model.EstadoReserva;
 import es.iesdeteis.secretaria.model.ReservaTurno;
+import es.iesdeteis.secretaria.model.TipoNotificacion;
 import es.iesdeteis.secretaria.model.TipoTramite;
 import es.iesdeteis.secretaria.model.Usuario;
 import es.iesdeteis.secretaria.repository.ReservaTurnoRepository;
@@ -20,17 +21,28 @@ import java.util.Optional;
 @Service
 public class ReservaTurnoServiceImpl implements ReservaTurnoService {
 
+    // ATRIBUTOS
+
     private final ReservaTurnoRepository reservaTurnoRepository;
     private final TipoTramiteRepository tipoTramiteRepository;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notificacionService;
+
+
+    // CONSTRUCTOR
 
     public ReservaTurnoServiceImpl(ReservaTurnoRepository reservaTurnoRepository,
                                    TipoTramiteRepository tipoTramiteRepository,
-                                   UsuarioRepository usuarioRepository) {
+                                   UsuarioRepository usuarioRepository,
+                                   NotificacionService notificacionService) {
         this.reservaTurnoRepository = reservaTurnoRepository;
         this.tipoTramiteRepository = tipoTramiteRepository;
         this.usuarioRepository = usuarioRepository;
+        this.notificacionService = notificacionService;
     }
+
+
+    // MÉTODOS PRINCIPALES
 
     @Override
     public List<ReservaTurno> findAll() {
@@ -86,7 +98,20 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
             reservaTurno.setEstadoReserva(EstadoReserva.PENDIENTE);
         }
 
-        return reservaTurnoRepository.save(reservaTurno);
+        ReservaTurno reservaGuardada = reservaTurnoRepository.save(reservaTurno);
+
+        if (reservaGuardada.getUsuario() != null) {
+            notificacionService.crearNotificacionInterna(
+                    "Reserva creada",
+                    "Tu reserva de turno se ha creado correctamente.",
+                    TipoNotificacion.RESERVA_CREADA,
+                    "RESERVA_" + reservaGuardada.getId(),
+                    "/reservas",
+                    reservaGuardada.getUsuario()
+            );
+        }
+
+        return reservaGuardada;
     }
 
     @Override
@@ -99,14 +124,11 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
         reservaTurno.setOrigenTurno(dto.getOrigenTurno());
         reservaTurno.setEstadoReserva(EstadoReserva.PENDIENTE);
 
-        // Generar código de referencia simple
         reservaTurno.setCodigoReferencia("RES-" + System.currentTimeMillis());
 
-        // Cargar trámites completos desde BD
         List<TipoTramite> tramitesCompletos = cargarTramitesPorIds(dto.getTiposTramiteIds());
         reservaTurno.setTiposTramite(tramitesCompletos);
 
-        // Obtener usuario autenticado y asignarlo a la reserva
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
 
@@ -115,7 +137,18 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
 
         reservaTurno.setUsuario(usuario);
 
-        return reservaTurnoRepository.save(reservaTurno);
+        ReservaTurno reservaGuardada = reservaTurnoRepository.save(reservaTurno);
+
+        notificacionService.crearNotificacionInterna(
+                "Reserva creada",
+                "Tu reserva de turno se ha creado correctamente. Código: " + reservaGuardada.getCodigoReferencia(),
+                TipoNotificacion.RESERVA_CREADA,
+                "RESERVA_" + reservaGuardada.getId(),
+                "/reservas",
+                usuario
+        );
+
+        return reservaGuardada;
     }
 
     @Override
@@ -132,7 +165,31 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
         List<TipoTramite> tramitesCompletos = cargarTramitesCompletos(reservaTurnoActualizada.getTiposTramite());
         reservaTurno.setTiposTramite(tramitesCompletos);
 
-        return reservaTurnoRepository.save(reservaTurno);
+        ReservaTurno reservaGuardada = reservaTurnoRepository.save(reservaTurno);
+
+        if (reservaGuardada.getUsuario() != null) {
+            if (reservaGuardada.getEstadoReserva() == EstadoReserva.CONFIRMADA) {
+                notificacionService.crearNotificacionInterna(
+                        "Reserva confirmada",
+                        "Tu reserva de turno ha sido confirmada.",
+                        TipoNotificacion.RESERVA_CONFIRMADA,
+                        "RESERVA_" + reservaGuardada.getId(),
+                        "/reservas",
+                        reservaGuardada.getUsuario()
+                );
+            } else if (reservaGuardada.getEstadoReserva() == EstadoReserva.CANCELADA) {
+                notificacionService.crearNotificacionInterna(
+                        "Reserva cancelada",
+                        "Tu reserva de turno ha sido cancelada.",
+                        TipoNotificacion.RESERVA_CANCELADA,
+                        "RESERVA_" + reservaGuardada.getId(),
+                        "/reservas",
+                        reservaGuardada.getUsuario()
+                );
+            }
+        }
+
+        return reservaGuardada;
     }
 
     @Override
@@ -144,11 +201,9 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
         reservaTurnoRepository.deleteById(id);
     }
 
-    // =========================
-    // MÉTODOS AUXILIARES
-    // =========================
 
-    // Cargar trámites completos desde BD a partir de la entidad
+    // MÉTODOS AUXILIARES
+
     private List<TipoTramite> cargarTramitesCompletos(List<TipoTramite> tiposTramite) {
         List<TipoTramite> tramitesCompletos = new ArrayList<>();
 
@@ -163,7 +218,6 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
         return tramitesCompletos;
     }
 
-    // Cargar trámites completos desde BD a partir de IDs
     private List<TipoTramite> cargarTramitesPorIds(List<Long> tiposTramiteIds) {
         List<TipoTramite> tramitesCompletos = new ArrayList<>();
 

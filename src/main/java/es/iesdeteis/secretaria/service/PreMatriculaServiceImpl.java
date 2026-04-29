@@ -2,9 +2,12 @@ package es.iesdeteis.secretaria.service;
 
 import es.iesdeteis.secretaria.exception.PreMatriculaDuplicadaException;
 import es.iesdeteis.secretaria.exception.PreMatriculaNoEncontradaException;
-import es.iesdeteis.secretaria.model.EstadoPreMatricula;
-import es.iesdeteis.secretaria.model.PreMatricula;
+import es.iesdeteis.secretaria.exception.UsuarioNoEncontradoException;
+import es.iesdeteis.secretaria.model.*;
 import es.iesdeteis.secretaria.repository.PreMatriculaRepository;
+import es.iesdeteis.secretaria.repository.UsuarioRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,11 +16,31 @@ import java.util.Optional;
 @Service
 public class PreMatriculaServiceImpl implements PreMatriculaService {
 
-    private final PreMatriculaRepository preMatriculaRepository;
+    // =========================
+    // ATRIBUTOS
+    // =========================
 
-    public PreMatriculaServiceImpl(PreMatriculaRepository preMatriculaRepository) {
+    private final PreMatriculaRepository preMatriculaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notificacionService;
+
+
+    // =========================
+    // CONSTRUCTOR
+    // =========================
+
+    public PreMatriculaServiceImpl(PreMatriculaRepository preMatriculaRepository,
+                                   UsuarioRepository usuarioRepository,
+                                   NotificacionService notificacionService) {
         this.preMatriculaRepository = preMatriculaRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.notificacionService = notificacionService;
     }
+
+
+    // =========================
+    // MÉTODOS PRINCIPALES
+    // =========================
 
     @Override
     public List<PreMatricula> findAll() {
@@ -37,7 +60,25 @@ public class PreMatriculaServiceImpl implements PreMatriculaService {
             throw new PreMatriculaDuplicadaException("Ya existe una prematrícula con ese DNI");
         }
 
-        return preMatriculaRepository.save(preMatricula);
+        // 🔐 Obtener usuario autenticado
+        Usuario usuario = obtenerUsuarioAutenticado();
+
+        // Asociar usuario
+        preMatricula.setUsuario(usuario);
+
+        PreMatricula preMatriculaGuardada = preMatriculaRepository.save(preMatricula);
+
+        // 🔔 Notificación
+        notificacionService.crearNotificacionInterna(
+                "Prematrícula creada",
+                "Tu prematrícula se ha registrado correctamente.",
+                TipoNotificacion.PREMATRICULA_CREADA,
+                "PREMATRICULA_" + preMatriculaGuardada.getId(),
+                "/prematriculas",
+                usuario
+        );
+
+        return preMatriculaGuardada;
     }
 
     @Override
@@ -46,7 +87,6 @@ public class PreMatriculaServiceImpl implements PreMatriculaService {
         PreMatricula preMatricula = preMatriculaRepository.findById(id)
                 .orElseThrow(() -> new PreMatriculaNoEncontradaException("PreMatricula no encontrada"));
 
-        // Actualizamos datos
         preMatricula.setNombreAlumno(preMatriculaActualizada.getNombreAlumno());
         preMatricula.setApellidosAlumno(preMatriculaActualizada.getApellidosAlumno());
         preMatricula.setDniAlumno(preMatriculaActualizada.getDniAlumno());
@@ -80,6 +120,57 @@ public class PreMatriculaServiceImpl implements PreMatriculaService {
 
         preMatricula.setEstado(nuevoEstado);
 
-        return preMatriculaRepository.save(preMatricula);
+        PreMatricula guardada = preMatriculaRepository.save(preMatricula);
+
+        // 🔔 Notificación según estado REAL
+        if (nuevoEstado == EstadoPreMatricula.EN_REVISION) {
+
+            notificacionService.crearNotificacionInterna(
+                    "Prematrícula en revisión",
+                    "Tu prematrícula está siendo revisada por el centro.",
+                    TipoNotificacion.PREMATRICULA_EN_REVISION,
+                    "PREMATRICULA_" + guardada.getId(),
+                    "/prematriculas",
+                    guardada.getUsuario()
+            );
+
+        } else if (nuevoEstado == EstadoPreMatricula.VALIDADA) {
+
+            notificacionService.crearNotificacionInterna(
+                    "Prematrícula validada",
+                    "Tu prematrícula ha sido validada correctamente.",
+                    TipoNotificacion.PREMATRICULA_ACEPTADA, // esto está bien en el enum de notificaciones
+                    "PREMATRICULA_" + guardada.getId(),
+                    "/prematriculas",
+                    guardada.getUsuario()
+            );
+
+        } else if (nuevoEstado == EstadoPreMatricula.RECHAZADA) {
+
+            notificacionService.crearNotificacionInterna(
+                    "Prematrícula rechazada",
+                    "Tu prematrícula ha sido rechazada. Revisa la información indicada.",
+                    TipoNotificacion.PREMATRICULA_RECHAZADA,
+                    "PREMATRICULA_" + guardada.getId(),
+                    "/prematriculas",
+                    guardada.getUsuario()
+            );
+        }
+
+        return guardada;
+    }
+
+
+    // =========================
+    // MÉTODO AUXILIAR
+    // =========================
+
+    private Usuario obtenerUsuarioAutenticado() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
     }
 }

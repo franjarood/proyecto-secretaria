@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/incidencias/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE")
                         .requestMatchers("/turnos/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "ALUMNO")
                         .requestMatchers("/reservas/**").hasAnyRole("ADMIN", "SECRETARIA", "ALUMNO")
+                        .requestMatchers("/notificaciones/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "ALUMNO")
                         .anyRequest().permitAll()
                 )
                 .httpBasic(Customizer.withDefaults());

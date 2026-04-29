@@ -23,6 +23,7 @@ public class DocumentoServiceImpl implements DocumentoService {
     private final UsuarioRepository usuarioRepository;
     private final PreMatriculaRepository preMatriculaRepository;
     private final TurnoRepository turnoRepository;
+    private final NotificacionService notificacionService;
 
 
     // =========================
@@ -32,11 +33,13 @@ public class DocumentoServiceImpl implements DocumentoService {
     public DocumentoServiceImpl(DocumentoRepository documentoRepository,
                                 UsuarioRepository usuarioRepository,
                                 PreMatriculaRepository preMatriculaRepository,
-                                TurnoRepository turnoRepository) {
+                                TurnoRepository turnoRepository,
+                                NotificacionService notificacionService) {
         this.documentoRepository = documentoRepository;
         this.usuarioRepository = usuarioRepository;
         this.preMatriculaRepository = preMatriculaRepository;
         this.turnoRepository = turnoRepository;
+        this.notificacionService = notificacionService;
     }
 
 
@@ -77,6 +80,15 @@ public class DocumentoServiceImpl implements DocumentoService {
         );
 
         Documento documentoGuardado = documentoRepository.save(documento);
+
+        notificacionService.crearNotificacionInterna(
+                "Documento subido",
+                "Tu documento '" + documentoGuardado.getNombreArchivo() + "' se ha subido correctamente.",
+                TipoNotificacion.DOCUMENTO_SUBIDO,
+                "DOCUMENTO_" + documentoGuardado.getId(),
+                "/documentos/mis-documentos",
+                documentoGuardado.getUsuario()
+        );
 
         return convertirADTO(documentoGuardado);
     }
@@ -143,7 +155,18 @@ public class DocumentoServiceImpl implements DocumentoService {
 
         documento.validar(dto.getComentario(), revisadoPor);
 
-        return convertirADTO(documentoRepository.save(documento));
+        Documento documentoGuardado = documentoRepository.save(documento);
+
+        notificacionService.crearNotificacionInterna(
+                "Documento validado",
+                "Tu documento '" + documentoGuardado.getNombreArchivo() + "' ha sido validado correctamente.",
+                TipoNotificacion.DOCUMENTO_VALIDADO,
+                "DOCUMENTO_" + documentoGuardado.getId(),
+                "/documentos/mis-documentos",
+                documentoGuardado.getUsuario()
+        );
+
+        return convertirADTO(documentoGuardado);
     }
 
     @Override
@@ -156,7 +179,18 @@ public class DocumentoServiceImpl implements DocumentoService {
 
         documento.rechazar(dto.getComentario(), revisadoPor);
 
-        return convertirADTO(documentoRepository.save(documento));
+        Documento documentoGuardado = documentoRepository.save(documento);
+
+        notificacionService.crearNotificacionInterna(
+                "Documento rechazado",
+                "Tu documento '" + documentoGuardado.getNombreArchivo() + "' ha sido rechazado. Revisa el comentario de revisión.",
+                TipoNotificacion.DOCUMENTO_RECHAZADO,
+                "DOCUMENTO_" + documentoGuardado.getId(),
+                "/documentos/mis-documentos",
+                documentoGuardado.getUsuario()
+        );
+
+        return convertirADTO(documentoGuardado);
     }
 
     @Override
@@ -167,7 +201,18 @@ public class DocumentoServiceImpl implements DocumentoService {
 
         documento.marcarRequiereRevision(dto.getComentario(), revisadoPor);
 
-        return convertirADTO(documentoRepository.save(documento));
+        Documento documentoGuardado = documentoRepository.save(documento);
+
+        notificacionService.crearNotificacionInterna(
+                "Documento requiere revisión",
+                "Tu documento '" + documentoGuardado.getNombreArchivo() + "' requiere revisión. Revisa el comentario indicado.",
+                TipoNotificacion.DOCUMENTO_REQUIERE_REVISION,
+                "DOCUMENTO_" + documentoGuardado.getId(),
+                "/documentos/mis-documentos",
+                documentoGuardado.getUsuario()
+        );
+
+        return convertirADTO(documentoGuardado);
     }
 
 

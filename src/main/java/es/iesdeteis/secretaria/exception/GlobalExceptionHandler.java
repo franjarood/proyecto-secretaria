@@ -229,5 +229,33 @@ public class GlobalExceptionHandler {
         return error;
     }
 
+    // Notificación no encontrada
+    @ExceptionHandler(NotificacionNoEncontradaException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleNotificacionNoEncontrada(NotificacionNoEncontradaException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("mensaje", ex.getMessage());
+        error.put("error", "Notificación no encontrada");
+        error.put("status", 404);
+        error.put("timestamp", LocalDateTime.now());
+
+        return error;
+    }
+
+    // Notificación no pertenece al usuario
+    @ExceptionHandler(NotificacionNoPerteneceUsuarioException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleNotificacionNoPerteneceUsuario(NotificacionNoPerteneceUsuarioException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("mensaje", ex.getMessage());
+        error.put("error", "Acceso denegado a la notificación");
+        error.put("status", 403);
+        error.put("timestamp", LocalDateTime.now());
+
+        return error;
+    }
+
 
 }

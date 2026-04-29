@@ -1,9 +1,9 @@
 package es.iesdeteis.secretaria.service;
 
 import es.iesdeteis.secretaria.dto.UsuarioActualDTO;
-import es.iesdeteis.secretaria.dto.UsuarioResponseDTO;
 import es.iesdeteis.secretaria.exception.UsuarioDuplicadoException;
 import es.iesdeteis.secretaria.exception.UsuarioNoEncontradoException;
+import es.iesdeteis.secretaria.model.TipoNotificacion;
 import es.iesdeteis.secretaria.model.Usuario;
 import es.iesdeteis.secretaria.repository.UsuarioRepository;
 import org.springframework.security.core.Authentication;
@@ -17,13 +17,25 @@ import java.util.Optional;
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
+    // ATRIBUTOS
+
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NotificacionService notificacionService;
 
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+
+    // CONSTRUCTOR
+
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
+                              PasswordEncoder passwordEncoder,
+                              NotificacionService notificacionService) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.notificacionService = notificacionService;
     }
+
+
+    // MÉTODOS PRINCIPALES
 
     @Override
     public List<Usuario> findAll() {
@@ -56,7 +68,19 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-        return usuarioRepository.save(usuario);
+
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        notificacionService.crearNotificacionInterna(
+                "Usuario registrado",
+                "Tu cuenta se ha creado correctamente en la plataforma de secretaría.",
+                TipoNotificacion.USUARIO_REGISTRADO,
+                "USUARIO_" + usuarioGuardado.getId(),
+                "/usuarios/me",
+                usuarioGuardado
+        );
+
+        return usuarioGuardado;
     }
 
     @Override
@@ -105,8 +129,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         return convertirAUsuarioActualDTO(usuario);
     }
 
-    // MÉTODOS AUXILIARES
 
+    // MÉTODOS AUXILIARES
 
     private UsuarioActualDTO convertirAUsuarioActualDTO(Usuario usuario) {
 

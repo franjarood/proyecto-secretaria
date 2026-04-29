@@ -28,6 +28,7 @@ public class TurnoServiceImpl implements TurnoService {
     private final ReservaTurnoRepository reservaTurnoRepository;
     private final HistorialAccionService historialAccionService;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notificacionService;
 
 
     // CONSTRUCTOR
@@ -36,12 +37,14 @@ public class TurnoServiceImpl implements TurnoService {
                             TipoTramiteRepository tipoTramiteRepository,
                             ReservaTurnoRepository reservaTurnoRepository,
                             HistorialAccionService historialAccionService,
-                            UsuarioRepository usuarioRepository) {
+                            UsuarioRepository usuarioRepository,
+                            NotificacionService notificacionService) {
         this.turnoRepository = turnoRepository;
         this.tipoTramiteRepository = tipoTramiteRepository;
         this.reservaTurnoRepository = reservaTurnoRepository;
         this.historialAccionService = historialAccionService;
         this.usuarioRepository = usuarioRepository;
+        this.notificacionService = notificacionService;
     }
 
 
@@ -150,6 +153,17 @@ public class TurnoServiceImpl implements TurnoService {
                 turnoGuardado.getId()
         );
 
+        if (reservaTurno.getUsuario() != null) {
+            notificacionService.crearNotificacionInterna(
+                    "Turno generado",
+                    "Se ha generado tu turno correctamente. Número: " + turnoGuardado.getNumeroTurno(),
+                    TipoNotificacion.TURNO_GENERADO,
+                    "TURNO_" + turnoGuardado.getId(),
+                    "/turnos",
+                    reservaTurno.getUsuario()
+            );
+        }
+
         return turnoGuardado;
     }
 
@@ -184,7 +198,25 @@ public class TurnoServiceImpl implements TurnoService {
         turno.setDuracionEstimada(calculateEstimatedDuration(turno));
         turno.setPrioridad(calculatePriority(turno));
 
-        return turnoRepository.save(turno);
+        Turno turnoGuardado = turnoRepository.save(turno);
+
+        if (turnoGuardado.getEstadoTurno() == EstadoTurno.CANCELADO) {
+
+            Usuario usuario = obtenerUsuarioDelTurno(turnoGuardado);
+
+            if (usuario != null) {
+                notificacionService.crearNotificacionInterna(
+                        "Turno cancelado",
+                        "Tu turno " + turnoGuardado.getNumeroTurno() + " ha sido cancelado.",
+                        TipoNotificacion.TURNO_CANCELADO,
+                        "TURNO_" + turnoGuardado.getId(),
+                        "/turnos",
+                        usuario
+                );
+            }
+        }
+
+        return turnoGuardado;
     }
 
     @Override
@@ -204,7 +236,6 @@ public class TurnoServiceImpl implements TurnoService {
     @Override
     public Integer calculateEstimatedDuration(Turno turno) {
 
-        // Sumar duración de todos los trámites
         int total = 0;
 
         if (turno.getTiposTramite() != null) {
@@ -224,10 +255,7 @@ public class TurnoServiceImpl implements TurnoService {
         Turno turno = turnoRepository.findById(id)
                 .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
 
-        // Guardar hora de llegada actual
         turno.setHoraLlegada(LocalTime.now());
-
-        // Cambiar estado a EN_COLA
         turno.setEstadoTurno(EstadoTurno.EN_COLA);
 
         Turno turnoGuardado = turnoRepository.save(turno);
@@ -276,7 +304,6 @@ public class TurnoServiceImpl implements TurnoService {
         return espera;
     }
 
-    // Obtener posición del turno en la cola
     @Override
     public int getPositionInQueue(Long id) {
 
@@ -293,7 +320,6 @@ public class TurnoServiceImpl implements TurnoService {
         throw new TurnoNoEncontradoException("Turno no encontrado en la cola");
     }
 
-    // Obtener cuántos turnos tiene delante
     @Override
     public int getPeopleAhead(Long id) {
         return getPositionInQueue(id) - 1;
@@ -305,23 +331,19 @@ public class TurnoServiceImpl implements TurnoService {
         List<Turno> turnos = turnoRepository.findAll();
         List<Turno> activos = new ArrayList<>();
 
-        // Quedarse solo con turnos activos
         for (Turno t : turnos) {
             if (t.getEstadoTurno() != null && t.getEstadoTurno().esActivo()) {
                 activos.add(t);
             }
         }
 
-        // Ordenar por prioridad y después por hora
         activos.sort((t1, t2) -> {
 
-            // 1. Prioridad
             int cmpPrioridad = Integer.compare(t1.getPrioridad(), t2.getPrioridad());
             if (cmpPrioridad != 0) {
                 return cmpPrioridad;
             }
 
-            // 2. Priorizar los que ya llegaron
             if (t1.getHoraLlegada() != null && t2.getHoraLlegada() == null) {
                 return -1;
             }
@@ -329,19 +351,16 @@ public class TurnoServiceImpl implements TurnoService {
                 return 1;
             }
 
-            // 3. Si ambos tienen hora de llegada, ordenar por llegada
             if (t1.getHoraLlegada() != null && t2.getHoraLlegada() != null) {
                 return t1.getHoraLlegada().compareTo(t2.getHoraLlegada());
             }
 
-            // 4. Si ninguno llegó todavía, ordenar por hora de cita
             return t1.getHoraCita().compareTo(t2.getHoraCita());
         });
 
         return activos;
     }
 
-    // Cambiar estado del turno
     @Override
     public Turno cambiarEstado(Long id, String estado) {
 
@@ -363,6 +382,22 @@ public class TurnoServiceImpl implements TurnoService {
                     turnoGuardado.getId()
             );
 
+            if (nuevoEstado == EstadoTurno.CANCELADO) {
+
+                Usuario usuario = obtenerUsuarioDelTurno(turnoGuardado);
+
+                if (usuario != null) {
+                    notificacionService.crearNotificacionInterna(
+                            "Turno cancelado",
+                            "Tu turno " + turnoGuardado.getNumeroTurno() + " ha sido cancelado.",
+                            TipoNotificacion.TURNO_CANCELADO,
+                            "TURNO_" + turnoGuardado.getId(),
+                            "/turnos",
+                            usuario
+                    );
+                }
+            }
+
             return turnoGuardado;
 
         } catch (IllegalArgumentException e) {
@@ -370,7 +405,6 @@ public class TurnoServiceImpl implements TurnoService {
         }
     }
 
-    // Pasar al siguiente turno de la cola
     @Override
     public Turno siguienteTurno() {
 
@@ -387,6 +421,20 @@ public class TurnoServiceImpl implements TurnoService {
                         "El turno " + turnoFinalizado.getNumeroTurno() + " pasó a FINALIZADO",
                         turnoFinalizado.getId()
                 );
+
+                Usuario usuarioFinalizado = obtenerUsuarioDelTurno(turnoFinalizado);
+
+                if (usuarioFinalizado != null) {
+                    notificacionService.crearNotificacionInterna(
+                            "Turno finalizado",
+                            "Tu turno " + turnoFinalizado.getNumeroTurno() + " ha finalizado.",
+                            TipoNotificacion.TURNO_FINALIZADO,
+                            "TURNO_" + turnoFinalizado.getId(),
+                            "/turnos",
+                            usuarioFinalizado
+                    );
+                }
+
                 break;
             }
         }
@@ -406,6 +454,19 @@ public class TurnoServiceImpl implements TurnoService {
                         turnoGuardado.getId()
                 );
 
+                Usuario usuarioLlamado = obtenerUsuarioDelTurno(turnoGuardado);
+
+                if (usuarioLlamado != null) {
+                    notificacionService.crearNotificacionInterna(
+                            "Turno llamado",
+                            "Tu turno " + turnoGuardado.getNumeroTurno() + " ha sido llamado.",
+                            TipoNotificacion.TURNO_LLAMADO,
+                            "TURNO_" + turnoGuardado.getId(),
+                            "/turnos",
+                            usuarioLlamado
+                    );
+                }
+
                 return turnoGuardado;
             }
         }
@@ -413,7 +474,6 @@ public class TurnoServiceImpl implements TurnoService {
         throw new TurnoNoEncontradoException("No hay más turnos en espera");
     }
 
-    // Reanudar turno y devolverlo a la cola
     @Override
     public Turno reanudarTurno(Long id) {
 
@@ -443,7 +503,6 @@ public class TurnoServiceImpl implements TurnoService {
     // MÉTODOS AUXILIARES
     // =========================
 
-    // Cargar trámites completos desde BD
     private List<TipoTramite> cargarTramitesCompletos(List<TipoTramite> tiposTramite) {
         List<TipoTramite> tramitesCompletos = new ArrayList<>();
 
@@ -458,29 +517,23 @@ public class TurnoServiceImpl implements TurnoService {
         return tramitesCompletos;
     }
 
-    // Calcular prioridad automática
     private Integer calculatePriority(Turno turno) {
 
-        // Prioridad 0 -> caso urgente manual
         if (Boolean.TRUE.equals(turno.getPrioridadManual())) {
             return 0;
         }
 
-        // Prioridad 1 -> reingreso
         if (Boolean.TRUE.equals(turno.getReingreso())) {
             return 1;
         }
 
-        // Prioridad 2 -> cita previa
         if ("ONLINE".equalsIgnoreCase(turno.getOrigenTurno())) {
             return 2;
         }
 
-        // Prioridad 3 -> sin cita
         return 3;
     }
 
-    // Obtener turno validando permisos del usuario autenticado
     private Turno obtenerTurnoSeguro(Long id) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -500,7 +553,6 @@ public class TurnoServiceImpl implements TurnoService {
                 .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
     }
 
-    // Registrar acción en el historial
     private void registrarHistorial(String accion, String descripcion, Long idEntidad) {
         HistorialAccion historialAccion = new HistorialAccion();
 
@@ -513,7 +565,6 @@ public class TurnoServiceImpl implements TurnoService {
         historialAccionService.save(historialAccion);
     }
 
-    // Obtener id del usuario autenticado
     private Long obtenerIdUsuarioActual() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -526,5 +577,16 @@ public class TurnoServiceImpl implements TurnoService {
         return usuarioRepository.findByEmail(email)
                 .map(Usuario::getId)
                 .orElse(null);
+    }
+
+    private Usuario obtenerUsuarioDelTurno(Turno turno) {
+
+        if (turno.getReservaTurno() != null &&
+                turno.getReservaTurno().getUsuario() != null) {
+
+            return turno.getReservaTurno().getUsuario();
+        }
+
+        return null;
     }
 }

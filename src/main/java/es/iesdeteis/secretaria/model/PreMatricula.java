@@ -62,6 +62,9 @@ public class PreMatricula {
     @OneToMany(mappedBy = "preMatricula", cascade = CascadeType.ALL)
     private List<Documento> documentos;
 
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
 
     // CONSTRUCTORES
 
@@ -207,6 +210,14 @@ public class PreMatricula {
 
     public void setDocumentos(List<Documento> documentos) {
         this.documentos = documentos;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     @Override

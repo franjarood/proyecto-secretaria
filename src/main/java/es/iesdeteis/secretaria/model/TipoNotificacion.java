@@ -1,0 +1,44 @@
+package es.iesdeteis.secretaria.model;
+
+public enum TipoNotificacion {
+
+    // Usuario
+    USUARIO_REGISTRADO,
+
+    // Documentos
+    DOCUMENTO_SUBIDO,
+    DOCUMENTO_VALIDADO,
+    DOCUMENTO_RECHAZADO,
+    DOCUMENTO_REQUIERE_REVISION,
+
+    // Prematrícula
+    PREMATRICULA_CREADA,
+    PREMATRICULA_EN_REVISION,
+    PREMATRICULA_ACEPTADA,
+    PREMATRICULA_RECHAZADA,
+
+    // Turnos
+    TURNO_GENERADO,
+    TURNO_PROXIMO,
+    TURNO_LLAMADO,
+    TURNO_CANCELADO,
+    TURNO_FINALIZADO,
+
+    // Reservas
+    RESERVA_CREADA,
+    RESERVA_CONFIRMADA,
+    RESERVA_CANCELADA,
+
+    // Pagos
+    PAGO_PENDIENTE,
+    PAGO_REALIZADO,
+    PAGO_FALLIDO,
+
+    // General
+    INFORMACION,
+
+    // Incidencias
+    INCIDENCIA_CREADA,
+    INCIDENCIA_RESUELTA,
+    INCIDENCIA_INTERNA
+}
