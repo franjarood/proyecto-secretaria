@@ -1,6 +1,7 @@
 package es.iesdeteis.secretaria.repository;
 
 import es.iesdeteis.secretaria.model.Notificacion;
+import es.iesdeteis.secretaria.model.TipoNotificacion;
 import es.iesdeteis.secretaria.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,5 +16,11 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Long
     Long countByUsuarioAndLeidaFalse(Usuario usuario);
 
     List<Notificacion> findByUsuarioAndLeidaFalse(Usuario usuario);
+
+    boolean existsByReferenciaAndTipoAndUsuarioEmail(
+            String referencia,
+            TipoNotificacion tipo,
+            String email
+    );
 
 }

@@ -581,9 +581,20 @@ public class TurnoServiceImpl implements TurnoService {
                 Usuario usuario = obtenerUsuarioDelTurno(turno);
 
                 if (usuario != null) {
+
+                    String mensaje;
+
+                    if (turnosDelante == 0) {
+                        mensaje = "Es tu turno. Dirígete al mostrador.";
+                    } else if (turnosDelante == 1) {
+                        mensaje = "Queda 1 turno antes que el tuyo.";
+                    } else {
+                        mensaje = "Quedan " + turnosDelante + " turnos antes que el tuyo.";
+                    }
+
                     notificacionService.crearNotificacionInterna(
                             "Tu turno está cerca",
-                            "Quedan " + turnosDelante + " turnos antes que el tuyo.",
+                            mensaje,
                             TipoNotificacion.TURNO_PROXIMO,
                             "TURNO_" + turno.getId(),
                             "/turnos",

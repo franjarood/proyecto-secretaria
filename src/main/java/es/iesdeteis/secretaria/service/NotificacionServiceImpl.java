@@ -79,6 +79,15 @@ public class NotificacionServiceImpl implements NotificacionService {
                                          String urlDestino,
                                          Usuario usuario) {
 
+        if (usuario == null || usuario.getEmail() == null) {
+            return;
+        }
+
+        if (notificacionRepository.existsByReferenciaAndTipoAndUsuarioEmail(
+                referencia, tipo, usuario.getEmail())) {
+            return;
+        }
+
         Notificacion notificacion = new Notificacion(
                 titulo,
                 mensaje,
