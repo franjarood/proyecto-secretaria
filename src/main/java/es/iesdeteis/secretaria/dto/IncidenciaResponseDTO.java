@@ -1,13 +1,17 @@
 package es.iesdeteis.secretaria.dto;
 
+import es.iesdeteis.secretaria.model.TipoIncidencia;
+
 import java.time.LocalDateTime;
 
 public class IncidenciaResponseDTO {
 
+    // =========================
     // ATRIBUTOS
+    // =========================
 
     private Long id;
-    private String tipo;
+    private TipoIncidencia tipo;
     private String descripcion;
     private LocalDateTime fecha;
     private Boolean resuelta;
@@ -15,12 +19,14 @@ public class IncidenciaResponseDTO {
     private Long turnoId;
 
 
+    // =========================
     // CONSTRUCTORES
+    // =========================
 
     public IncidenciaResponseDTO() {
     }
 
-    public IncidenciaResponseDTO(Long id, String tipo, String descripcion, LocalDateTime fecha,
+    public IncidenciaResponseDTO(Long id, TipoIncidencia tipo, String descripcion, LocalDateTime fecha,
                                  Boolean resuelta, String accionTomada, Long turnoId) {
         this.id = id;
         this.tipo = tipo;
@@ -32,17 +38,19 @@ public class IncidenciaResponseDTO {
     }
 
 
+    // =========================
     // GETTERS Y SETTERS
+    // =========================
 
     public Long getId() {
         return id;
     }
 
-    public String getTipo() {
+    public TipoIncidencia getTipo() {
         return tipo;
     }
 
-    public void setTipo(String tipo) {
+    public void setTipo(TipoIncidencia tipo) {
         this.tipo = tipo;
     }
 
