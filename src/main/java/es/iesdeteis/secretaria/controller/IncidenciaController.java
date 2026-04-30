@@ -4,6 +4,7 @@ import es.iesdeteis.secretaria.dto.IncidenciaCreateDTO;
 import es.iesdeteis.secretaria.dto.IncidenciaResponseDTO;
 import es.iesdeteis.secretaria.exception.IncidenciaNoEncontradaException;
 import es.iesdeteis.secretaria.model.Incidencia;
+import es.iesdeteis.secretaria.model.TipoIncidencia;
 import es.iesdeteis.secretaria.service.IncidenciaService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,6 +49,15 @@ public class IncidenciaController {
         return convertirAResponseDTO(incidencia);
     }
 
+    // Filtrar incidencias por tipo
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE')")
+    @GetMapping("/tipo/{tipo}")
+    public List<IncidenciaResponseDTO> getIncidenciasByTipo(@PathVariable TipoIncidencia tipo) {
+        return incidenciaService.findByTipo(tipo).stream()
+                .map(this::convertirAResponseDTO)
+                .toList();
+    }
+
     // Crear incidencia
     @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE')")
     @PostMapping
@@ -62,6 +72,14 @@ public class IncidenciaController {
     public IncidenciaResponseDTO updateIncidencia(@PathVariable Long id, @Valid @RequestBody Incidencia incidencia) {
         Incidencia incidenciaActualizada = incidenciaService.update(id, incidencia);
         return convertirAResponseDTO(incidenciaActualizada);
+    }
+
+    // Marcar incidencia como resuelta
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA')")
+    @PutMapping("/{id}/resolver")
+    public IncidenciaResponseDTO marcarComoResuelta(@PathVariable Long id) {
+        Incidencia incidenciaResuelta = incidenciaService.marcarComoResuelta(id);
+        return convertirAResponseDTO(incidenciaResuelta);
     }
 
     // Eliminar incidencia

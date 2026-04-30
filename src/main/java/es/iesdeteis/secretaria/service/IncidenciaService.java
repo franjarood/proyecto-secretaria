@@ -2,6 +2,7 @@ package es.iesdeteis.secretaria.service;
 
 import es.iesdeteis.secretaria.dto.IncidenciaCreateDTO;
 import es.iesdeteis.secretaria.model.Incidencia;
+import es.iesdeteis.secretaria.model.TipoIncidencia;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,4 +26,8 @@ public interface IncidenciaService {
 
     // Eliminar incidencia
     void deleteById(Long id);
+
+    List<Incidencia> findByTipo(TipoIncidencia tipo);
+
+    Incidencia marcarComoResuelta(Long id);
 }

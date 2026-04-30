@@ -16,7 +16,9 @@ import java.util.Optional;
 @Service
 public class IncidenciaServiceImpl implements IncidenciaService {
 
+    // =========================
     // ATRIBUTOS
+    // =========================
 
     private final IncidenciaRepository incidenciaRepository;
     private final TurnoRepository turnoRepository;
@@ -24,7 +26,9 @@ public class IncidenciaServiceImpl implements IncidenciaService {
     private final NotificacionService notificacionService;
 
 
+    // =========================
     // CONSTRUCTOR
+    // =========================
 
     public IncidenciaServiceImpl(IncidenciaRepository incidenciaRepository,
                                  TurnoRepository turnoRepository,
@@ -37,7 +41,9 @@ public class IncidenciaServiceImpl implements IncidenciaService {
     }
 
 
+    // =========================
     // MÉTODOS
+    // =========================
 
     @Override
     public List<Incidencia> findAll() {
@@ -122,8 +128,36 @@ public class IncidenciaServiceImpl implements IncidenciaService {
         incidenciaRepository.deleteById(id);
     }
 
+    @Override
+    public List<Incidencia> findByTipo(TipoIncidencia tipo) {
+        return incidenciaRepository.findByTipo(tipo);
+    }
 
+    @Override
+    public Incidencia marcarComoResuelta(Long id) {
+
+        Incidencia incidencia = incidenciaRepository.findById(id)
+                .orElseThrow(() -> new IncidenciaNoEncontradaException("Incidencia no encontrada"));
+
+        // Evitar notificar dos veces si ya estaba resuelta
+        if (Boolean.TRUE.equals(incidencia.getResuelta())) {
+            return incidencia;
+        }
+
+        incidencia.setResuelta(true);
+        incidencia.setAccionTomada("Incidencia marcada como resuelta");
+
+        Incidencia incidenciaGuardada = incidenciaRepository.save(incidencia);
+
+        notificarIncidenciaResuelta(incidenciaGuardada);
+
+        return incidenciaGuardada;
+    }
+
+
+    // =========================
     // MÉTODOS AUXILIARES
+    // =========================
 
     private void notificarIncidenciaCreada(Incidencia incidencia) {
 
