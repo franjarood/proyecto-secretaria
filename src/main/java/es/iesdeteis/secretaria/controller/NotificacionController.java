@@ -56,6 +56,13 @@ public class NotificacionController {
         return notificacionService.contarMisNotificacionesNoLeidas(emailUsuario);
     }
 
+    // Obtener todas las notificaciones del sistema
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/todas")
+    public List<NotificacionResponseDTO> getTodasNotificaciones() {
+        return notificacionService.obtenerTodasNotificaciones();
+    }
+
 
     // Marcar todas las notificaciones como leídas
     @PreAuthorize("isAuthenticated()")

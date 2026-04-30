@@ -42,4 +42,6 @@ public interface NotificacionService {
 
     void enviarAvisoEmailCentro(String asunto, String mensaje);
 
+    List<NotificacionResponseDTO> obtenerTodasNotificaciones();
+
 }

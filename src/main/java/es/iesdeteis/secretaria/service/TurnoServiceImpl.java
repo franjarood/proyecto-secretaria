@@ -484,6 +484,8 @@ public class TurnoServiceImpl implements TurnoService {
                     );
                 }
 
+                notificarUsuariosCercanos();
+
                 return turnoGuardado;
             }
         }
@@ -557,6 +559,40 @@ public class TurnoServiceImpl implements TurnoService {
     // =========================
     // MÉTODOS AUXILIARES
     // =========================
+
+
+    private void notificarUsuariosCercanos() {
+
+        List<Turno> cola = getQueue();
+
+        for (int i = 0; i < cola.size(); i++) {
+
+            Turno turno = cola.get(i);
+
+            if (turno.getEstadoTurno() != EstadoTurno.EN_COLA
+                    && turno.getEstadoTurno() != EstadoTurno.REANUDADO) {
+                continue;
+            }
+
+            int turnosDelante = i;
+
+            if (turnosDelante <= 2) {
+
+                Usuario usuario = obtenerUsuarioDelTurno(turno);
+
+                if (usuario != null) {
+                    notificacionService.crearNotificacionInterna(
+                            "Tu turno está cerca",
+                            "Quedan " + turnosDelante + " turnos antes que el tuyo.",
+                            TipoNotificacion.TURNO_PROXIMO,
+                            "TURNO_" + turno.getId(),
+                            "/turnos",
+                            usuario
+                    );
+                }
+            }
+        }
+    }
 
     private List<TipoTramite> cargarTramitesCompletos(List<TipoTramite> tiposTramite) {
         List<TipoTramite> tramitesCompletos = new ArrayList<>();

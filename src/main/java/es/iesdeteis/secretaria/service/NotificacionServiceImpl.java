@@ -199,6 +199,14 @@ public class NotificacionServiceImpl implements NotificacionService {
         }
     }
 
+    @Override
+    public List<NotificacionResponseDTO> obtenerTodasNotificaciones() {
+        return notificacionRepository.findAll()
+                .stream()
+                .map(this::convertirAResponseDTO)
+                .toList();
+    }
+
 
     // =========================
     // MÉTODOS PRIVADOS
@@ -240,4 +248,6 @@ public class NotificacionServiceImpl implements NotificacionService {
 
         return dto;
     }
+
+
 }
