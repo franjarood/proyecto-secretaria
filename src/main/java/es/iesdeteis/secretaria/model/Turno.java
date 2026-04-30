@@ -42,6 +42,9 @@ public class Turno {
     // Se calcula automáticamente
     private Integer prioridad;
 
+    @Enumerated(EnumType.STRING)
+    private PrioridadTurno tipoPrioridad;
+
     @NotBlank(message = "El origen del turno no puede estar vacío")
     private String origenTurno; // ONLINE / KIOSKO
 
@@ -117,6 +120,26 @@ public class Turno {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+
+        if (this.tipoPrioridad == null) {
+            this.tipoPrioridad = PrioridadTurno.NORMAL;
+        }
+
+        if (this.prioridad == null) {
+            this.prioridad = 0;
+        }
+
+        if (this.reingreso == null) {
+            this.reingreso = false;
+        }
+
+        if (this.incidencia == null) {
+            this.incidencia = false;
+        }
+
+        if (this.prioridadManual == null) {
+            this.prioridadManual = false;
+        }
     }
 
     @PreUpdate
@@ -178,6 +201,14 @@ public class Turno {
 
     public void setPrioridad(Integer prioridad) {
         this.prioridad = prioridad;
+    }
+
+    public PrioridadTurno getTipoPrioridad() {
+        return tipoPrioridad;
+    }
+
+    public void setTipoPrioridad(PrioridadTurno tipoPrioridad) {
+        this.tipoPrioridad = tipoPrioridad;
     }
 
     public String getOrigenTurno() {
@@ -285,6 +316,7 @@ public class Turno {
         return "Turno [id=" + id +
                 ", numeroTurno=" + numeroTurno +
                 ", estadoTurno=" + estadoTurno +
-                ", prioridad=" + prioridad + "]";
+                ", prioridad=" + prioridad +
+                ", tipoPrioridad=" + tipoPrioridad + "]";
     }
 }

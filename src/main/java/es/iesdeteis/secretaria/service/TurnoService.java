@@ -1,5 +1,6 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.model.PrioridadTurno;
 import es.iesdeteis.secretaria.model.Turno;
 
 import java.util.List;
@@ -57,4 +58,6 @@ public interface TurnoService {
 
     // Obtener un turno por ID según el rol del usuario autenticado
     Optional<Turno> findTurnoByIdSegunRol(Long id);
+
+    Turno cambiarPrioridad(Long id, PrioridadTurno tipo, String motivo);
 }

@@ -111,7 +111,7 @@ public class TurnoServiceImpl implements TurnoService {
         turno.setEstadoTurno(EstadoTurno.RESERVADO);
 
         // Calcular prioridad automática
-        turno.setPrioridad(calculatePriority(turno));
+        asignarPrioridad(turno);
 
         return turnoRepository.save(turno);
     }
@@ -133,13 +133,16 @@ public class TurnoServiceImpl implements TurnoService {
         turno.setHoraCita(reservaTurno.getHoraCita());
         turno.setOrigenTurno(reservaTurno.getOrigenTurno());
 
+        // Cargar trámites completos desde BD
         List<TipoTramite> tramitesCompletos = cargarTramitesCompletos(reservaTurno.getTiposTramite());
         turno.setTiposTramite(new ArrayList<>(tramitesCompletos));
 
         turno.setReservaTurno(reservaTurno);
         turno.setEstadoTurno(EstadoTurno.RESERVADO);
         turno.setDuracionEstimada(calculateEstimatedDuration(turno));
-        turno.setPrioridad(calculatePriority(turno));
+
+        // Calcular prioridad automática
+        asignarPrioridad(turno);
 
         reservaTurno.setEstadoReserva(EstadoReserva.CONFIRMADA);
         reservaTurnoRepository.save(reservaTurno);
@@ -186,6 +189,7 @@ public class TurnoServiceImpl implements TurnoService {
         turno.setIncidencia(turnoActualizado.getIncidencia());
         turno.setPrioridadManual(turnoActualizado.getPrioridadManual());
         turno.setMotivoPrioridad(turnoActualizado.getMotivoPrioridad());
+        turno.setTipoPrioridad(turnoActualizado.getTipoPrioridad());
 
         // Actualizar reserva asociada
         turno.setReservaTurno(turnoActualizado.getReservaTurno());
@@ -196,7 +200,7 @@ public class TurnoServiceImpl implements TurnoService {
 
         // Recalcular duración y prioridad
         turno.setDuracionEstimada(calculateEstimatedDuration(turno));
-        turno.setPrioridad(calculatePriority(turno));
+        asignarPrioridad(turno);
 
         Turno turnoGuardado = turnoRepository.save(turno);
 
@@ -257,6 +261,9 @@ public class TurnoServiceImpl implements TurnoService {
 
         turno.setHoraLlegada(LocalTime.now());
         turno.setEstadoTurno(EstadoTurno.EN_COLA);
+
+        // Recalcular prioridad al entrar en cola
+        asignarPrioridad(turno);
 
         Turno turnoGuardado = turnoRepository.save(turno);
 
@@ -331,6 +338,7 @@ public class TurnoServiceImpl implements TurnoService {
         List<Turno> turnos = turnoRepository.findAll();
         List<Turno> activos = new ArrayList<>();
 
+        // Filtrar solo turnos activos
         for (Turno t : turnos) {
             if (t.getEstadoTurno() != null && t.getEstadoTurno().esActivo()) {
                 activos.add(t);
@@ -339,14 +347,20 @@ public class TurnoServiceImpl implements TurnoService {
 
         activos.sort((t1, t2) -> {
 
-            int cmpPrioridad = Integer.compare(t1.getPrioridad(), t2.getPrioridad());
+            // --- Orden por prioridad (mayor primero) ---
+            int prioridad1 = t1.getPrioridad() != null ? t1.getPrioridad() : 0;
+            int prioridad2 = t2.getPrioridad() != null ? t2.getPrioridad() : 0;
+
+            int cmpPrioridad = Integer.compare(prioridad2, prioridad1);
             if (cmpPrioridad != 0) {
                 return cmpPrioridad;
             }
 
+            // --- Si tienen misma prioridad, ordenar por hora de llegada ---
             if (t1.getHoraLlegada() != null && t2.getHoraLlegada() == null) {
                 return -1;
             }
+
             if (t1.getHoraLlegada() == null && t2.getHoraLlegada() != null) {
                 return 1;
             }
@@ -355,6 +369,7 @@ public class TurnoServiceImpl implements TurnoService {
                 return t1.getHoraLlegada().compareTo(t2.getHoraLlegada());
             }
 
+            // --- Si no hay hora de llegada, ordenar por hora de cita ---
             return t1.getHoraCita().compareTo(t2.getHoraCita());
         });
 
@@ -410,6 +425,7 @@ public class TurnoServiceImpl implements TurnoService {
 
         List<Turno> cola = getQueue();
 
+        // Finalizar el turno que esté actualmente en atención
         for (Turno t : cola) {
             if (t.getEstadoTurno() == EstadoTurno.EN_ATENCION) {
                 t.setEstadoTurno(EstadoTurno.FINALIZADO);
@@ -441,6 +457,7 @@ public class TurnoServiceImpl implements TurnoService {
 
         List<Turno> colaActualizada = getQueue();
 
+        // Llamar al siguiente turno según prioridad y orden de llegada
         for (Turno t : colaActualizada) {
             if (t.getEstadoTurno() == EstadoTurno.EN_COLA
                     || t.getEstadoTurno() == EstadoTurno.REANUDADO) {
@@ -475,6 +492,35 @@ public class TurnoServiceImpl implements TurnoService {
     }
 
     @Override
+    public Turno cambiarPrioridad(Long id, PrioridadTurno tipo, String motivo) {
+
+        Turno turno = turnoRepository.findById(id)
+                .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
+
+        // Cambiar prioridad manualmente
+        turno.setTipoPrioridad(tipo);
+        turno.setPrioridadManual(true);
+        turno.setMotivoPrioridad(motivo);
+
+        // Recalcular prioridad numérica
+        asignarPrioridad(turno);
+
+        Turno turnoGuardado = turnoRepository.save(turno);
+
+        // Guardar historial
+        registrarHistorial(
+                "CAMBIO_PRIORIDAD",
+                "Se cambió la prioridad del turno "
+                        + turnoGuardado.getNumeroTurno()
+                        + " a " + tipo
+                        + ". Motivo: " + motivo,
+                turnoGuardado.getId()
+        );
+
+        return turnoGuardado;
+    }
+
+    @Override
     public Turno reanudarTurno(Long id) {
 
         Turno turno = turnoRepository.findById(id)
@@ -487,6 +533,13 @@ public class TurnoServiceImpl implements TurnoService {
 
         turno.setEstadoTurno(EstadoTurno.REANUDADO);
 
+        // Al reanudar por incidencia, se considera compensación
+        turno.setReingreso(true);
+        turno.setTipoPrioridad(PrioridadTurno.COMPENSACION);
+        turno.setMotivoPrioridad("Reingreso por incidencia o pausa en la atención");
+
+        asignarPrioridad(turno);
+
         Turno turnoGuardado = turnoRepository.save(turno);
 
         registrarHistorial(
@@ -497,6 +550,8 @@ public class TurnoServiceImpl implements TurnoService {
 
         return turnoGuardado;
     }
+
+
 
 
     // =========================
@@ -517,21 +572,46 @@ public class TurnoServiceImpl implements TurnoService {
         return tramitesCompletos;
     }
 
-    private Integer calculatePriority(Turno turno) {
 
-        if (Boolean.TRUE.equals(turno.getPrioridadManual())) {
+
+
+    // =========================
+    // PRIORIDAD INTELIGENTE
+    // =========================
+
+    private void asignarPrioridad(Turno turno) {
+
+        // --- Determinar tipo de prioridad ---
+        if (turno.getTipoPrioridad() == null) {
+
+            if (Boolean.TRUE.equals(turno.getPrioridadManual())) {
+                turno.setTipoPrioridad(PrioridadTurno.ESPECIAL);
+
+            } else if (Boolean.TRUE.equals(turno.getReingreso())) {
+                turno.setTipoPrioridad(PrioridadTurno.COMPENSACION);
+
+            } else {
+                turno.setTipoPrioridad(PrioridadTurno.NORMAL);
+            }
+        }
+
+        // --- Asignar valor numérico para ordenar ---
+        turno.setPrioridad(calcularValorPrioridad(turno.getTipoPrioridad()));
+    }
+
+    private Integer calcularValorPrioridad(PrioridadTurno tipoPrioridad) {
+
+        if (tipoPrioridad == null) {
             return 0;
         }
 
-        if (Boolean.TRUE.equals(turno.getReingreso())) {
-            return 1;
-        }
-
-        if ("ONLINE".equalsIgnoreCase(turno.getOrigenTurno())) {
-            return 2;
-        }
-
-        return 3;
+        return switch (tipoPrioridad) {
+            case URGENTE -> 100;        // máxima prioridad
+            case COMPENSACION -> 80;    // usuario perjudicado por incidencia
+            case ESPECIAL -> 60;        // prioridad manual del centro
+            case ALTA -> 40;            // caso importante
+            case NORMAL -> 0;           // turno normal
+        };
     }
 
     private Turno obtenerTurnoSeguro(Long id) {

@@ -1,11 +1,8 @@
 package es.iesdeteis.secretaria.controller;
 
-import es.iesdeteis.secretaria.dto.EstadoTurnoDTO;
-import es.iesdeteis.secretaria.dto.EstadoTurnoResponseDTO;
-import es.iesdeteis.secretaria.dto.PosicionTurnoDTO;
-import es.iesdeteis.secretaria.dto.TurnoColaDTO;
-import es.iesdeteis.secretaria.dto.TurnoResponseDTO;
+import es.iesdeteis.secretaria.dto.*;
 import es.iesdeteis.secretaria.exception.TurnoNoEncontradoException;
+import es.iesdeteis.secretaria.model.PrioridadTurno;
 import es.iesdeteis.secretaria.model.TipoTramite;
 import es.iesdeteis.secretaria.model.Turno;
 import es.iesdeteis.secretaria.service.TurnoService;
@@ -174,6 +171,21 @@ public class TurnoController {
         return convertirAResponseDTO(turnoReanudado);
     }
 
+    // Cambiar prioridad del turno
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA')")
+    @PutMapping("/{id}/prioridad")
+    public TurnoResponseDTO cambiarPrioridad(@PathVariable Long id,
+                                             @Valid @RequestBody CambiarPrioridadDTO dto) {
+
+        Turno turnoActualizado = turnoService.cambiarPrioridad(
+                id,
+                dto.getTipo(),
+                dto.getMotivo()
+        );
+
+        return convertirAResponseDTO(turnoActualizado);
+    }
+
 
     // MÉTODOS AUXILIARES
 
@@ -187,6 +199,7 @@ public class TurnoController {
                 turno.getHoraLlegada(),
                 turno.getEstadoTurno(),
                 turno.getPrioridad(),
+                turno.getTipoPrioridad(), // 👈 ESTO ES LO NUEVO
                 turno.getOrigenTurno(),
                 turno.getObservaciones(),
                 turno.getDuracionEstimada(),

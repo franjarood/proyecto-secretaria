@@ -3,6 +3,7 @@ package es.iesdeteis.secretaria.repository;
 import es.iesdeteis.secretaria.model.EstadoTurno;
 import es.iesdeteis.secretaria.model.Turno;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,4 +25,14 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
 
     // Turno por id SOLO si pertenece al usuario
     Optional<Turno> findByIdAndReservaTurnoUsuarioEmail(Long id, String email);
+
+    // Obtener cola ordenada por prioridad y hora de llegada
+    @Query("""
+        SELECT t
+        FROM Turno t
+        WHERE t.estadoTurno = :estado
+        ORDER BY t.prioridad DESC, t.horaLlegada ASC, t.createdAt ASC
+        """)
+    List<Turno> findColaOrdenadaPorPrioridad(EstadoTurno estado);
+
 }
