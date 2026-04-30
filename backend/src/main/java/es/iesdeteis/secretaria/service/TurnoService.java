@@ -60,4 +60,6 @@ public interface TurnoService {
     Optional<Turno> findTurnoByIdSegunRol(Long id);
 
     Turno cambiarPrioridad(Long id, PrioridadTurno tipo, String motivo);
+
+
 }

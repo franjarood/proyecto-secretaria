@@ -258,4 +258,18 @@ public class GlobalExceptionHandler {
     }
 
 
+    // Ventana de confirmación inválida
+    @ExceptionHandler(VentanaConfirmacionInvalidaException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleVentanaConfirmacionInvalida(VentanaConfirmacionInvalidaException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("mensaje", ex.getMessage());
+        error.put("error", "Ventana de confirmación inválida");
+        error.put("status", 400);
+        error.put("timestamp", LocalDateTime.now());
+
+        return error;
+    }
+
 }

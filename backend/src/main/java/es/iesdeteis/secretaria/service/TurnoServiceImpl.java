@@ -1,9 +1,6 @@
 package es.iesdeteis.secretaria.service;
 
-import es.iesdeteis.secretaria.exception.EstadoTurnoInvalidoException;
-import es.iesdeteis.secretaria.exception.ReservaNoEncontradaException;
-import es.iesdeteis.secretaria.exception.ReservaYaProcesadaException;
-import es.iesdeteis.secretaria.exception.TurnoNoEncontradoException;
+import es.iesdeteis.secretaria.exception.*;
 import es.iesdeteis.secretaria.model.*;
 import es.iesdeteis.secretaria.repository.ReservaTurnoRepository;
 import es.iesdeteis.secretaria.repository.TipoTramiteRepository;
@@ -29,7 +26,7 @@ public class TurnoServiceImpl implements TurnoService {
     private final HistorialAccionService historialAccionService;
     private final UsuarioRepository usuarioRepository;
     private final NotificacionService notificacionService;
-
+    private int turnosPrioritariosSeguidos = 0;
 
     // CONSTRUCTOR
 
@@ -259,6 +256,18 @@ public class TurnoServiceImpl implements TurnoService {
         Turno turno = turnoRepository.findById(id)
                 .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
 
+        LocalTime ahora = LocalTime.now();
+        LocalTime horaCita = turno.getHoraCita();
+
+        LocalTime inicioVentana = horaCita.minusMinutes(15);
+        LocalTime finVentana = horaCita.plusMinutes(15);
+
+        if (ahora.isBefore(inicioVentana) || ahora.isAfter(finVentana)) {
+            throw new VentanaConfirmacionInvalidaException(
+                    "Solo puedes confirmar llegada dentro de la ventana permitida de tu cita"
+            );
+        }
+
         turno.setHoraLlegada(LocalTime.now());
         turno.setEstadoTurno(EstadoTurno.EN_COLA);
 
@@ -458,36 +467,43 @@ public class TurnoServiceImpl implements TurnoService {
         List<Turno> colaActualizada = getQueue();
 
         // Llamar al siguiente turno según prioridad y orden de llegada
-        for (Turno t : colaActualizada) {
-            if (t.getEstadoTurno() == EstadoTurno.EN_COLA
-                    || t.getEstadoTurno() == EstadoTurno.REANUDADO) {
+        Turno siguiente = seleccionarSiguienteTurnoEquilibrado(colaActualizada);
 
-                t.setEstadoTurno(EstadoTurno.EN_ATENCION);
-                Turno turnoGuardado = turnoRepository.save(t);
+        if (siguiente != null) {
 
-                registrarHistorial(
-                        "SIGUIENTE_TURNO",
-                        "El turno " + turnoGuardado.getNumeroTurno() + " pasó a EN_ATENCION",
-                        turnoGuardado.getId()
-                );
+            siguiente.setEstadoTurno(EstadoTurno.EN_ATENCION);
+            Turno turnoGuardado = turnoRepository.save(siguiente);
 
-                Usuario usuarioLlamado = obtenerUsuarioDelTurno(turnoGuardado);
+            Integer prioridad = turnoGuardado.getPrioridad() != null ? turnoGuardado.getPrioridad() : 0;
 
-                if (usuarioLlamado != null) {
-                    notificacionService.crearNotificacionInterna(
-                            "Turno llamado",
-                            "Tu turno " + turnoGuardado.getNumeroTurno() + " ha sido llamado.",
-                            TipoNotificacion.TURNO_LLAMADO,
-                            "TURNO_" + turnoGuardado.getId(),
-                            "/turnos",
-                            usuarioLlamado
-                    );
-                }
-
-                notificarUsuariosCercanos();
-
-                return turnoGuardado;
+            if (prioridad > 0) {
+                turnosPrioritariosSeguidos++;
+            } else {
+                turnosPrioritariosSeguidos = 0;
             }
+
+            registrarHistorial(
+                    "SIGUIENTE_TURNO",
+                    "El turno " + turnoGuardado.getNumeroTurno() + " pasó a EN_ATENCION",
+                    turnoGuardado.getId()
+            );
+
+            Usuario usuarioLlamado = obtenerUsuarioDelTurno(turnoGuardado);
+
+            if (usuarioLlamado != null) {
+                notificacionService.crearNotificacionInterna(
+                        "Turno llamado",
+                        "Tu turno " + turnoGuardado.getNumeroTurno() + " ha sido llamado.",
+                        TipoNotificacion.TURNO_LLAMADO,
+                        "TURNO_" + turnoGuardado.getId(),
+                        "/turnos",
+                        usuarioLlamado
+                );
+            }
+
+            notificarUsuariosCercanos();
+
+            return turnoGuardado;
         }
 
         throw new TurnoNoEncontradoException("No hay más turnos en espera");
@@ -619,6 +635,44 @@ public class TurnoServiceImpl implements TurnoService {
         return tramitesCompletos;
     }
 
+    private Turno seleccionarSiguienteTurnoEquilibrado(List<Turno> cola) {
+
+        Turno turnoPrioritario = null;
+
+        for (Turno turno : cola) {
+
+            if (turno.getEstadoTurno() != EstadoTurno.EN_COLA
+                    && turno.getEstadoTurno() != EstadoTurno.REANUDADO) {
+                continue;
+            }
+
+            Integer prioridad = turno.getPrioridad() != null ? turno.getPrioridad() : 0;
+
+            if (prioridad > 0 && turnoPrioritario == null) {
+                turnoPrioritario = turno;
+            }
+
+            // Base: seguir orden normal
+            if (turnosPrioritariosSeguidos < 2) {
+                return turno;
+            }
+        }
+
+        // Si ya hubo muchos prioritarios → mete uno normal
+        for (Turno turno : cola) {
+            Integer prioridad = turno.getPrioridad() != null ? turno.getPrioridad() : 0;
+
+            if ((turno.getEstadoTurno() == EstadoTurno.EN_COLA
+                    || turno.getEstadoTurno() == EstadoTurno.REANUDADO)
+                    && prioridad == 0) {
+                return turno;
+            }
+        }
+
+        // Si no hay normales → tira de prioritarios
+        return turnoPrioritario;
+    }
+
 
 
 
@@ -716,4 +770,6 @@ public class TurnoServiceImpl implements TurnoService {
 
         return null;
     }
+
+
 }
