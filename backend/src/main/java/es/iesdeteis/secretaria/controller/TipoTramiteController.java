@@ -20,7 +20,6 @@ public class TipoTramiteController {
     }
 
     // Obtener todos los tipos de trámite
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
     @GetMapping
     public List<TipoTramite> findAll() {
         return tipoTramiteService.findAll();

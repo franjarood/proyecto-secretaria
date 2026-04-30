@@ -1,0 +1,118 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f7fb;
+}
+
+/* HEADER */
+.header {
+    background: #005bac;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+/* HERO */
+.hero {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.hero h2 {
+    font-size: 32px;
+}
+
+.buttons {
+    margin-top: 20px;
+}
+
+button {
+    padding: 12px 20px;
+    margin: 10px;
+    border: none;
+    background: #005bac;
+    color: white;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+button:hover {
+    background: #004080;
+}
+
+/* CARDS */
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 200px;
+    text-align: center;
+}
+
+/* FORMULARIO RESERVA */
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 8% 60px;
+}
+
+.form-card {
+    width: 100%;
+    max-width: 620px;
+    background: white;
+    padding: 32px;
+    border-radius: 20px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-card label {
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-card input,
+.form-card select,
+.form-card textarea {
+    padding: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+.form-card input:focus,
+.form-card select:focus,
+.form-card textarea:focus {
+    outline: none;
+    border-color: #005bac;
+}
+
+.mensaje {
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+.correcto {
+    color: #087443;
+}
+
+.error {
+    color: #b91c1c;
+}
+
+.btn-volver {
+    margin-top: 24px;
+    background: #e5e7eb;
+    color: #374151;
+}

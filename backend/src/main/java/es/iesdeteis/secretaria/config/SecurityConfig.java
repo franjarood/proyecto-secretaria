@@ -33,10 +33,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .userDetailsService(customUserDetailsService)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/tipos-tramite", "/tipos-tramite/**").permitAll()
                         .requestMatchers("/usuarios/me").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "ALUMNO")
                         .requestMatchers("/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/incidencias/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE")
