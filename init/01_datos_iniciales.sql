@@ -18,9 +18,9 @@ SET @usuarios_existentes := (SELECT COUNT(*) FROM usuarios);
 -- Usuarios (password BCrypt para: Admin123.)
 -- =========================
 
--- Hash BCrypt válido (mismo para todos): Admin123.
+-- Hash BCrypt válido (mismo para todos): abc123.
 -- (Generado con BCrypt, cost 10)
-SET @bcrypt_admin123 := '$2a$10$VgH4J4LzWz8rS4xU5g7m7e0.zgGmXHn9xA0dQq1bqY2rQp4nP3qj2';
+SET @bcrypt_abc123 := '$2a$10$iImuWG1GE4YKEwInatKqoeZAXqnOAff.meYhZeELfOZ2lmISIlNCS';
 
 -- Insertar solo si la tabla está vacía
 INSERT INTO usuarios (nombre, apellidos, dni, email, telefono, password, rol, creado_en)

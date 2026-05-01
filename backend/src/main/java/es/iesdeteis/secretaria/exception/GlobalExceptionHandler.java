@@ -300,4 +300,18 @@ public class GlobalExceptionHandler {
         return error;
     }
 
+    // Credenciales inválidas
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, Object> handleCredencialesInvalidas(CredencialesInvalidasException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.UNAUTHORIZED.value());
+        error.put("error", "Credenciales inválidas");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
 }
