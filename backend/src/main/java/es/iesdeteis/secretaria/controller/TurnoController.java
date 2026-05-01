@@ -2,7 +2,6 @@ package es.iesdeteis.secretaria.controller;
 
 import es.iesdeteis.secretaria.dto.*;
 import es.iesdeteis.secretaria.exception.TurnoNoEncontradoException;
-import es.iesdeteis.secretaria.model.PrioridadTurno;
 import es.iesdeteis.secretaria.model.TipoTramite;
 import es.iesdeteis.secretaria.model.Turno;
 import es.iesdeteis.secretaria.service.TurnoService;
@@ -184,6 +183,14 @@ public class TurnoController {
         );
 
         return convertirAResponseDTO(turnoActualizado);
+    }
+
+    // Check-in geolocalizado (adicional)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PostMapping("/{id}/checkin-geo")
+    public CheckInGeoResponseDTO checkInGeo(@PathVariable Long id,
+                                            @Valid @RequestBody CheckInGeoRequestDTO dto) {
+        return turnoService.checkInGeolocalizado(id, dto);
     }
 
 

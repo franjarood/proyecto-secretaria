@@ -1,5 +1,7 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.dto.CheckInGeoRequestDTO;
+import es.iesdeteis.secretaria.dto.CheckInGeoResponseDTO;
 import es.iesdeteis.secretaria.exception.*;
 import es.iesdeteis.secretaria.model.*;
 import es.iesdeteis.secretaria.repository.ReservaTurnoRepository;
@@ -771,5 +773,58 @@ public class TurnoServiceImpl implements TurnoService {
         return null;
     }
 
+    // =========================
+    // CHECK-IN GEOLOCALIZADO
+    // =========================
+
+    // Coordenadas fijas del centro (ajustables en futuro a config/BD).
+    private static final double CENTRO_LATITUD = 42.0;
+    private static final double CENTRO_LONGITUD = -8.0;
+    private static final double RADIO_METROS = 150.0;
+
+    @Override
+    public CheckInGeoResponseDTO checkInGeolocalizado(Long idTurno, CheckInGeoRequestDTO request) {
+
+        if (request == null) {
+            throw new UbicacionNoValidaException("La ubicación es obligatoria");
+        }
+
+        if (request.getPrecisionMetros() != null && request.getPrecisionMetros() > 300) {
+            throw new UbicacionNoValidaException("La precisión de la ubicación es demasiado baja (" + request.getPrecisionMetros() + " m)");
+        }
+
+        double distancia = distanciaMetros(CENTRO_LATITUD, CENTRO_LONGITUD, request.getLatitud(), request.getLongitud());
+
+        if (distancia > RADIO_METROS) {
+            throw new UsuarioFueraDelCentroException("Estás fuera del centro. Distancia aproximada: " + Math.round(distancia) + " m");
+        }
+
+        // Reutilizamos la lógica existente (no se cambia el endpoint antiguo)
+        confirmArrival(idTurno);
+
+        return new CheckInGeoResponseDTO(
+                true,
+                "Check-in correcto. Llegada confirmada.",
+                distancia,
+                request.getPrecisionMetros()
+        );
+    }
+
+    private double distanciaMetros(double lat1, double lon1, double lat2, double lon2) {
+        // Haversine
+        final double R = 6371000.0; // metros
+
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c;
+    }
 
 }
+

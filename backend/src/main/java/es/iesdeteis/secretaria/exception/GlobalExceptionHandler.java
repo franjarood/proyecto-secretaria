@@ -272,4 +272,32 @@ public class GlobalExceptionHandler {
         return error;
     }
 
+    // Usuario fuera del centro (check-in geo)
+    @ExceptionHandler(UsuarioFueraDelCentroException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleUsuarioFueraDelCentro(UsuarioFueraDelCentroException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.FORBIDDEN.value());
+        error.put("error", "Usuario fuera del centro");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // Ubicación no válida (precisión mala o datos inválidos)
+    @ExceptionHandler(UbicacionNoValidaException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleUbicacionNoValida(UbicacionNoValidaException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+        error.put("error", "Ubicación no válida");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
 }

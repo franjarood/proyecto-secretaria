@@ -1,5 +1,7 @@
 package es.iesdeteis.secretaria.service;
 
+import es.iesdeteis.secretaria.dto.CheckInGeoRequestDTO;
+import es.iesdeteis.secretaria.dto.CheckInGeoResponseDTO;
 import es.iesdeteis.secretaria.model.PrioridadTurno;
 import es.iesdeteis.secretaria.model.Turno;
 
@@ -61,5 +63,6 @@ public interface TurnoService {
 
     Turno cambiarPrioridad(Long id, PrioridadTurno tipo, String motivo);
 
-
+    // Check-in geolocalizado (adicional, no reemplaza confirmar llegada)
+    CheckInGeoResponseDTO checkInGeolocalizado(Long idTurno, CheckInGeoRequestDTO request);
 }
