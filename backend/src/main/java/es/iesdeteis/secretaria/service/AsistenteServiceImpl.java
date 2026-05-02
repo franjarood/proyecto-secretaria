@@ -11,6 +11,9 @@ import es.iesdeteis.secretaria.repository.NotificacionRepository;
 import es.iesdeteis.secretaria.repository.PreMatriculaRepository;
 import es.iesdeteis.secretaria.repository.TurnoRepository;
 import es.iesdeteis.secretaria.repository.UsuarioRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -40,6 +43,8 @@ public class AsistenteServiceImpl implements AsistenteService {
 
     @Override
     public List<AsistenteRecomendacionDTO> obtenerRecomendacionesUsuario(Long usuarioId) {
+
+        validarAccesoAsistenteUsuario(usuarioId);
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
@@ -126,6 +131,32 @@ public class AsistenteServiceImpl implements AsistenteService {
                 && turno.getReservaTurno() != null
                 && turno.getReservaTurno().getUsuario() != null
                 && turno.getReservaTurno().getUsuario().getId().equals(usuarioId);
+    }
+
+    // =========================
+    // Seguridad (anti-IDOR)
+    // =========================
+
+    /**
+     * Si el usuario autenticado es ALUMNO, solo puede consultar su propio asistente.
+     */
+    private void validarAccesoAsistenteUsuario(Long usuarioId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || usuarioId == null) {
+            return;
+        }
+
+        String email = auth.getName();
+        Usuario actual = usuarioRepository.findByEmail(email).orElse(null);
+
+        if (actual == null || actual.getRol() == null || actual.getId() == null) {
+            return;
+        }
+
+        if (actual.getRol() == es.iesdeteis.secretaria.model.RolUsuario.ALUMNO && !actual.getId().equals(usuarioId)) {
+            throw new AccessDeniedException("No puedes acceder al asistente de otro alumno");
+        }
     }
 }
 

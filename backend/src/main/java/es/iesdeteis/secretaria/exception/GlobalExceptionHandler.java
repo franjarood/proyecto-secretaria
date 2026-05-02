@@ -300,6 +300,20 @@ public class GlobalExceptionHandler {
         return error;
     }
 
+    // Acceso denegado (roles/permisos)
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.FORBIDDEN.value());
+        error.put("error", "Acceso denegado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
     // Credenciales inválidas
     @ExceptionHandler(CredencialesInvalidasException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)

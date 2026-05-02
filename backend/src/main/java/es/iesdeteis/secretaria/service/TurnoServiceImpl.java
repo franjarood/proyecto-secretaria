@@ -255,8 +255,9 @@ public class TurnoServiceImpl implements TurnoService {
     @Override
     public Turno confirmArrival(Long id) {
 
-        Turno turno = turnoRepository.findById(id)
-                .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
+        // Seguridad: si el usuario es ALUMNO, solo puede confirmar llegada de un turno suyo.
+        // Para personal del centro, se permite confirmar cualquier turno.
+        Turno turno = obtenerTurnoSeguro(id);
 
         LocalTime ahora = LocalTime.now();
         LocalTime horaCita = turno.getHoraCita();

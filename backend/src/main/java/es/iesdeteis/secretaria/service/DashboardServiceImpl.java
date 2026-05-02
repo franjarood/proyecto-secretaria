@@ -4,6 +4,9 @@ import es.iesdeteis.secretaria.dto.*;
 import es.iesdeteis.secretaria.exception.UsuarioNoEncontradoException;
 import es.iesdeteis.secretaria.model.*;
 import es.iesdeteis.secretaria.repository.*;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -47,6 +50,8 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public DashboardAlumnoDTO obtenerDashboardAlumno(Long usuarioId) {
+
+        validarAccesoDashboardAlumno(usuarioId);
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
@@ -351,6 +356,33 @@ public class DashboardServiceImpl implements DashboardService {
         dto.setTurnoId(documento.getTurno() != null ? documento.getTurno().getId() : null);
 
         return dto;
+    }
+
+    // =========================
+    // Seguridad (anti-IDOR)
+    // =========================
+
+    /**
+     * Si el usuario autenticado es ALUMNO, solo puede consultar su propio dashboard.
+     * El personal del centro (ADMIN/SECRETARIA/CONSERJE/PROFESOR) puede consultar otros usuarios.
+     */
+    private void validarAccesoDashboardAlumno(Long usuarioId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || usuarioId == null) {
+            return;
+        }
+
+        String email = auth.getName();
+        Usuario actual = usuarioRepository.findByEmail(email).orElse(null);
+
+        if (actual == null || actual.getRol() == null || actual.getId() == null) {
+            return;
+        }
+
+        if (actual.getRol() == RolUsuario.ALUMNO && !actual.getId().equals(usuarioId)) {
+            throw new AccessDeniedException("No puedes acceder al dashboard de otro alumno");
+        }
     }
 }
 
