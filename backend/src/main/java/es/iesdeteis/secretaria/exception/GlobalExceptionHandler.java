@@ -159,6 +159,21 @@ public class GlobalExceptionHandler {
     }
 
 
+    // Aviso público no encontrado
+    @ExceptionHandler(AvisoPublicoNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleAvisoPublicoNoEncontrado(AvisoPublicoNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Aviso público no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+
     // PreMatricula no encontrada
     @ExceptionHandler(PreMatriculaNoEncontradaException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -323,6 +338,202 @@ public class GlobalExceptionHandler {
         error.put("timestamp", LocalDateTime.now());
         error.put("status", HttpStatus.UNAUTHORIZED.value());
         error.put("error", "Credenciales inválidas");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // CentroInfo no encontrado
+    @ExceptionHandler(CentroInfoNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleCentroInfoNoEncontrado(CentroInfoNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Información del centro no encontrada");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // EventoCentro no encontrado
+    @ExceptionHandler(EventoCentroNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleEventoCentroNoEncontrado(EventoCentroNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Evento del centro no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // PagoTasa no encontrado
+    @ExceptionHandler(PagoTasaNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handlePagoTasaNoEncontrado(PagoTasaNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Pago de tasa no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // Pago no pertenece al usuario
+    @ExceptionHandler(PagoNoPerteneceUsuarioException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handlePagoNoPerteneceUsuario(PagoNoPerteneceUsuarioException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.FORBIDDEN.value());
+        error.put("error", "Acceso denegado al pago");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // Estado de pago inválido
+    @ExceptionHandler(EstadoPagoInvalidoException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleEstadoPagoInvalido(EstadoPagoInvalidoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+        error.put("error", "Estado de pago inválido");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // Stripe no configurado
+    @ExceptionHandler(StripeNoConfiguradoException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public Map<String, Object> handleStripeNoConfigurado(StripeNoConfiguradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
+        error.put("error", "Stripe no configurado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // Pago pasarela exception
+    @ExceptionHandler(PagoPasarelaException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handlePagoPasarela(PagoPasarelaException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+        error.put("error", "Error en pasarela de pago");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // TemaForo no encontrado
+    @ExceptionHandler(TemaForoNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleTemaForoNoEncontrado(TemaForoNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Tema de foro no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // RespuestaForo no encontrada
+    @ExceptionHandler(RespuestaForoNoEncontradaException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleRespuestaForoNoEncontrada(RespuestaForoNoEncontradaException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Respuesta de foro no encontrada");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // Recurso de foro no pertenece al usuario
+    @ExceptionHandler(RecursoForoNoPerteneceUsuarioException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleRecursoForoNoPerteneceUsuario(RecursoForoNoPerteneceUsuarioException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.FORBIDDEN.value());
+        error.put("error", "Acceso denegado al recurso del foro");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // AnuncioAyuda no encontrado
+    @ExceptionHandler(AnuncioAyudaNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleAnuncioAyudaNoEncontrado(AnuncioAyudaNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Anuncio de ayuda no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // AnuncioAyuda no pertenece al usuario
+    @ExceptionHandler(AnuncioAyudaNoPerteneceUsuarioException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleAnuncioAyudaNoPerteneceUsuario(AnuncioAyudaNoPerteneceUsuarioException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.FORBIDDEN.value());
+        error.put("error", "Acceso denegado al anuncio de ayuda");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // AnuncioMercado no encontrado
+    @ExceptionHandler(AnuncioMercadoNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleAnuncioMercadoNoEncontrado(AnuncioMercadoNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Anuncio de mercado no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // AnuncioMercado no pertenece al usuario
+    @ExceptionHandler(AnuncioMercadoNoPerteneceUsuarioException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleAnuncioMercadoNoPerteneceUsuario(AnuncioMercadoNoPerteneceUsuarioException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.FORBIDDEN.value());
+        error.put("error", "Acceso denegado al anuncio de mercado");
         error.put("mensaje", ex.getMessage());
 
         return error;

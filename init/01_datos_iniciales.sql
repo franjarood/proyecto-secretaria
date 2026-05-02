@@ -15,32 +15,32 @@ START TRANSACTION;
 SET @usuarios_existentes := (SELECT COUNT(*) FROM usuarios);
 
 -- =========================
--- Usuarios (password BCrypt para: Admin123.)
+-- Usuarios (password BCrypt para: abc123.)
 -- =========================
 
 -- Hash BCrypt válido (mismo para todos): abc123.
--- (Generado con BCrypt, cost 10)
+-- (Reutilizado del usuario admin@centro.local validado en la BD de pruebas)
 SET @bcrypt_abc123 := '$2a$10$iImuWG1GE4YKEwInatKqoeZAXqnOAff.meYhZeELfOZ2lmISIlNCS';
 
 -- Insertar solo si la tabla está vacía
 INSERT INTO usuarios (nombre, apellidos, dni, email, telefono, password, rol, creado_en)
-SELECT 'Admin', 'Centro', '00000000A', 'admin@centro.local', '600000001', @bcrypt_admin123, 'ADMIN', NOW()
+SELECT 'Admin', 'Centro', '00000000A', 'admin@centro.local', '600000001', @bcrypt_abc123, 'ADMIN', NOW()
 WHERE @usuarios_existentes = 0;
 
 INSERT INTO usuarios (nombre, apellidos, dni, email, telefono, password, rol, creado_en)
-SELECT 'Secretaría', 'Centro', '00000001B', 'secretaria@centro.local', '600000002', @bcrypt_admin123, 'SECRETARIA', NOW()
+SELECT 'Secretaría', 'Centro', '00000001B', 'secretaria@centro.local', '600000002', @bcrypt_abc123, 'SECRETARIA', NOW()
 WHERE @usuarios_existentes = 0;
 
 INSERT INTO usuarios (nombre, apellidos, dni, email, telefono, password, rol, creado_en)
-SELECT 'Profesor', 'Centro', '00000002C', 'profesor@centro.local', '600000003', @bcrypt_admin123, 'PROFESOR', NOW()
+SELECT 'Profesor', 'Centro', '00000002C', 'profesor@centro.local', '600000003', @bcrypt_abc123, 'PROFESOR', NOW()
 WHERE @usuarios_existentes = 0;
 
 INSERT INTO usuarios (nombre, apellidos, dni, email, telefono, password, rol, creado_en)
-SELECT 'Conserje', 'Centro', '00000003D', 'conserje@centro.local', '600000004', @bcrypt_admin123, 'CONSERJE', NOW()
+SELECT 'Conserje', 'Centro', '00000003D', 'conserje@centro.local', '600000004', @bcrypt_abc123, 'CONSERJE', NOW()
 WHERE @usuarios_existentes = 0;
 
 INSERT INTO usuarios (nombre, apellidos, dni, email, telefono, password, rol, creado_en)
-SELECT 'Alumno', 'Prueba', '00000004E', 'alumno@centro.local', '600000005', @bcrypt_admin123, 'ALUMNO', NOW()
+SELECT 'Alumno', 'Prueba', '00000004E', 'alumno@centro.local', '600000005', @bcrypt_abc123, 'ALUMNO', NOW()
 WHERE @usuarios_existentes = 0;
 
 -- Guardar IDs en variables (solo si hemos creado)

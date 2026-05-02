@@ -24,6 +24,11 @@ public class TipoTramite {
     @NotNull(message = "Debe indicar si requiere documentación")
     private Boolean requiereDocumentacion;
 
+    // Visibilidad pública (para parte pública / kiosko)
+    private Boolean destacado = false;
+
+    private Boolean visiblePublicamente = true;
+
 
     // CONSTRUCTORES
     public TipoTramite() {
@@ -36,6 +41,8 @@ public class TipoTramite {
         this.descripcion = descripcion;
         this.duracionEstimada = duracionEstimada;
         this.requiereDocumentacion = requiereDocumentacion;
+        this.destacado = false;
+        this.visiblePublicamente = true;
     }
 
     public TipoTramite(String nombre, String descripcion,
@@ -44,6 +51,8 @@ public class TipoTramite {
         this.descripcion = descripcion;
         this.duracionEstimada = duracionEstimada;
         this.requiereDocumentacion = requiereDocumentacion;
+        this.destacado = false;
+        this.visiblePublicamente = true;
     }
 
 
@@ -86,6 +95,22 @@ public class TipoTramite {
 
     public void setRequiereDocumentacion(Boolean requiereDocumentacion) {
         this.requiereDocumentacion = requiereDocumentacion;
+    }
+
+    public Boolean getDestacado() {
+        return destacado;
+    }
+
+    public void setDestacado(Boolean destacado) {
+        this.destacado = destacado;
+    }
+
+    public Boolean getVisiblePublicamente() {
+        return visiblePublicamente;
+    }
+
+    public void setVisiblePublicamente(Boolean visiblePublicamente) {
+        this.visiblePublicamente = visiblePublicamente;
     }
 
 

@@ -54,6 +54,13 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+        <!-- STRIPE (Checkout) -->
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>26.9.0</version>
+        </dependency>
+
         <!-- BASE DE DATOS -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
