@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kiosko - Secretaría Virtual</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/botones.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/cards.css">
+</head>
+<body data-rol="kiosko">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">🎓</div>
+      <div class="sidebar-brand-text">Secretaría Virtual</div>
+    </div>
+
+    <nav id="sidebarNav" class="sidebar-nav">
+      <!-- Se llena dinámicamente con Sidebar.init() -->
+    </nav>
+
+    <div class="sidebar-footer" style="padding: 16px; text-align: center; color: var(--text-secondary); font-size: 0.75rem;">
+      Kiosko Público
+    </div>
+  </aside>
+
+  <!-- Overlay para móvil -->
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+  <div class="main-content">
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="header">
+      <button id="toggleSidebar" class="header-toggle">☰</button>
+
+      <div class="header-search">
+        <svg class="header-search-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Buscar información...">
+        <kbd class="header-search-shortcut">⌘K</kbd>
+      </div>
+
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-secondary btn-sm">
+          Acceso Personal
+        </a>
+      </div>
+    </header>
+
+    <!-- ==================== CONTENIDO ==================== -->
+    <div class="content-wrapper">
+
+      <!-- Hero Section -->
+      <div class="hero-section">
+        <div class="hero-content">
+          <h1 class="hero-title">
+            🏫 Kiosko Público
+          </h1>
+          <p class="hero-subtitle">
+            Esta sección está en construcción. Aquí podrás consultar información, realizar check-in, gestionar turnos y más sin necesidad de iniciar sesión.
+          </p>
+        </div>
+      </div>
+
+      <!-- Placeholder Content -->
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Próximamente</h2>
+            <p class="section-subtitle">Interfaz completa de kiosko público</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="flex-center" style="flex-direction: column; gap: 24px; padding: 48px 24px;">
+              <div class="spinner"></div>
+              <p class="text-secondary">Página en construcción</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="js/config.js"></script>
+  <script src="js/components/sidebar.js"></script>
+  <script src="js/components/header.js"></script>
+
+  <script>
+    console.log('Kiosko público - No requiere autenticación');
+
+    // Inicializar Sidebar con menú público
+    const menuItems = [
+      { icon: '🏠', label: 'Inicio', href: 'panel-kiosko.html', active: true },
+      { icon: '📍', label: 'Check-in', href: '#checkin' },
+      { icon: '🎫', label: 'Sacar Turno', href: '#turno' },
+      { icon: 'ℹ️', label: 'Información', href: '#info' },
+      { icon: '📅', label: 'Horarios', href: '#horarios' },
+      { icon: '📞', label: 'Contacto', href: '#contacto' }
+    ];
+
+    // Datos de usuario falso para kiosko (sin foto ni nombre real)
+    const userData = {
+      nombre: 'Usuario',
+      apellidos: 'Público',
+      rol: 'KIOSKO'
+    };
+
+    Sidebar.init(menuItems, userData);
+  </script>
+
+</body>
+</html>

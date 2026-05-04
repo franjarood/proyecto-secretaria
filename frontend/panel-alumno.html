@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Alumno | Secretaría Inteligente</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS exclusivo del panel alumno premium -->
+    <link rel="stylesheet" href="css/panel-alumno-premium.css">
+</head>
+
+<body class="student-dashboard-body">
+
+<div class="app-shell alumno-theme">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar-premium">
+
+        <div class="brand-box">
+            <div class="brand-logo">
+                <span>◆</span>
+            </div>
+
+            <div>
+                <h2>Centro<br>Inteligente</h2>
+                <p>Tu punto de partida</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <button class="menu-item active" data-action="inicio">
+                <span class="menu-icon">🏠</span>
+                <span>Inicio</span>
+            </button>
+
+            <button class="menu-item" data-action="turnos">
+                <span class="menu-icon">📅</span>
+                <span>Turnos</span>
+            </button>
+
+            <button class="menu-item" data-action="matricula">
+                <span class="menu-icon">📝</span>
+                <span>Matrícula</span>
+            </button>
+
+            <button class="menu-item" data-action="documentacion">
+                <span class="menu-icon">📄</span>
+                <span>Documentación</span>
+            </button>
+
+            <button class="menu-item" data-action="checkin">
+                <span class="menu-icon">📍</span>
+                <span>Check-in</span>
+            </button>
+
+            <button class="menu-item" data-action="asistente">
+                <span class="menu-icon">🤖</span>
+                <span>Asistente IA</span>
+            </button>
+
+            <button class="menu-item" data-action="foro">
+                <span class="menu-icon">💬</span>
+                <span>Foro académico</span>
+            </button>
+
+            <button class="menu-item" data-action="mapa">
+                <span class="menu-icon">🗺️</span>
+                <span>Mapa y contacto</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-streak">
+            <p>Racha de logros 🔥</p>
+            <strong>7</strong>
+            <span>días con actividad</span>
+
+            <div class="mini-progress">
+                <div style="width: 72%"></div>
+            </div>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="avatar">A</div>
+
+            <div>
+                <strong id="sidebar-user-name">Alumno</strong>
+                <span>Panel privado</span>
+            </div>
+        </div>
+
+        <div class="sidebar-bottom-actions">
+            <button type="button" title="Ajustes" data-action="ajustes">⚙️</button>
+            <button type="button" title="Notificaciones" data-action="notificaciones" class="notification-dot">🔔</button>
+            <button type="button" title="Cerrar sesión" id="btn-logout">↪</button>
+        </div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="dashboard-main">
+
+        <!-- TOPBAR -->
+        <header class="topbar-premium">
+
+            <div class="search-box">
+                <span>🔎</span>
+                <input type="text" placeholder="Buscar en la plataforma...">
+                <kbd>Ctrl K</kbd>
+            </div>
+
+            <div class="topbar-actions">
+                <button type="button" title="Tema" data-action="tema">☀️</button>
+                <button type="button" class="notification-dot" title="Notificaciones" data-action="notificaciones">🔔</button>
+                <button type="button" title="Mensajes" data-action="mensajes">💬</button>
+
+                <div class="user-chip">
+                    <div class="avatar small">A</div>
+
+                    <div>
+                        <strong id="topbar-user-name">Alumno</strong>
+                        <span>Alumno</span>
+                    </div>
+
+                    <span>⌄</span>
+                </div>
+            </div>
+
+        </header>
+
+        <section class="dashboard-grid">
+
+            <!-- COLUMNA IZQUIERDA / PRINCIPAL -->
+            <div class="left-dashboard">
+
+                <!-- HERO -->
+                <section class="hero-premium">
+
+                    <div class="hero-content">
+                        <h1>¡Hola, <span id="hero-nombre-usuario">Alumno</span>! 👋</h1>
+                        <p>Todo lo que necesitas, en un solo lugar.</p>
+                        <p>Gestiona tu tiempo, trámites y vida académica.</p>
+
+                        <div class="hero-buttons">
+                            <button type="button" class="btn-gradient" id="btn-reservar-turno">
+                                📅 Reservar turno
+                            </button>
+
+                            <button type="button" class="btn-glass" id="btn-confirmar-llegada">
+                                📍 Confirmar llegada
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="hero-floating weather-card">
+                        <span id="weather-icon">✨</span>
+
+                        <div>
+                            <strong id="weather-temp">--°C</strong>
+                            <p id="weather-desc">Clima no disponible</p>
+                        </div>
+                    </div>
+
+                    <div class="hero-floating clock-card">
+                        <span>🕒</span>
+
+                        <div>
+                            <strong id="current-time">--:--</strong>
+                            <p id="current-date">--</p>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- STATS -->
+                <section class="stats-row">
+
+                    <article class="stat-card purple">
+                        <div class="stat-icon">📅</div>
+                        <p>Turnos activos</p>
+                        <strong id="stat-turnos">0</strong>
+                        <span class="positive">Dato real</span>
+
+                        <svg viewBox="0 0 120 30" class="sparkline">
+                            <polyline points="0,20 15,18 30,22 45,14 60,18 75,10 90,14 105,8 120,11"></polyline>
+                        </svg>
+                    </article>
+
+                    <article class="stat-card orange">
+                        <div class="stat-icon">📄</div>
+                        <p>Documentos pendientes</p>
+                        <strong id="stat-documentos">0</strong>
+                        <span class="warning">Pendientes</span>
+
+                        <svg viewBox="0 0 120 30" class="sparkline">
+                            <polyline points="0,24 15,19 30,18 45,21 60,15 75,17 90,11 105,14 120,10"></polyline>
+                        </svg>
+                    </article>
+
+                    <article class="stat-card pink">
+                        <div class="stat-icon">🔔</div>
+                        <p>Notificaciones</p>
+                        <strong id="stat-notificaciones">0</strong>
+                        <span class="danger">No leídas</span>
+
+                        <svg viewBox="0 0 120 30" class="sparkline">
+                            <polyline points="0,19 15,14 30,20 45,17 60,22 75,13 90,11 105,8 120,12"></polyline>
+                        </svg>
+                    </article>
+
+                    <article class="stat-card blue">
+                        <div class="stat-icon">✅</div>
+                        <p>Prematrícula</p>
+                        <strong id="stat-prematricula">--</strong>
+                        <span class="positive" id="prematricula-label">Estado actual</span>
+
+                        <svg viewBox="0 0 120 30" class="sparkline">
+                            <polyline points="0,25 15,22 30,19 45,17 60,12 75,15 90,10 105,8 120,6"></polyline>
+                        </svg>
+                    </article>
+
+                </section>
+
+                <!-- ACCESOS RÁPIDOS -->
+                <section class="quick-access-card">
+
+                    <div class="section-title-row">
+                        <h3>Accesos rápidos</h3>
+                        <button type="button" class="soft-btn" id="btn-personalizar-accesos">
+                            ⚙ Personalizar
+                        </button>
+                    </div>
+
+                    <div class="quick-access-row" id="quick-access-row">
+
+                        <button class="quick-action" data-action="turnos">
+                            <span class="qa-icon purple">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M8 3V6M16 3V6M4 9H20M6 5H18C19.1046 5 20 5.89543 20 7V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V7C4 5.89543 4.89543 5 6 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <strong>Turnos</strong>
+                            <small>Reserva tu cita</small>
+                        </button>
+
+                        <button class="quick-action" data-action="checkin">
+                            <span class="qa-icon green">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 21C12 21 18 15.6274 18 10.5C18 7.18629 15.3137 4.5 12 4.5C8.68629 4.5 6 7.18629 6 10.5C6 15.6274 12 21 12 21Z" stroke="currentColor" stroke-width="2"/>
+                                    <circle cx="12" cy="10.5" r="2.5" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </span>
+                            <strong>Check-in</strong>
+                            <small>Confirma tu llegada</small>
+                        </button>
+
+                        <button class="quick-action" data-action="matricula">
+                            <span class="qa-icon blue">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M8 3H14L19 8V19C19 20.1046 18.1046 21 17 21H8C6.89543 21 6 20.1046 6 19V5C6 3.89543 6.89543 3 8 3Z" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M14 3V8H19" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M9 12H15M9 16H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <strong>Matrícula</strong>
+                            <small>Proceso 24/25</small>
+                        </button>
+
+                        <button class="quick-action" data-action="documentos">
+                            <span class="qa-icon violet">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M5 4H14L19 9V20H5V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                    <path d="M14 4V9H19" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M8 13H16M8 16H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <strong>Documentos</strong>
+                            <small>Revisa pendientes</small>
+                        </button>
+
+                        <button class="quick-action" data-action="foro">
+                            <span class="qa-icon orange">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M7 17L4 20V6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V15C20 16.1046 19.1046 17 18 17H7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                    <circle cx="9" cy="10.5" r="1" fill="currentColor"/>
+                                    <circle cx="12" cy="10.5" r="1" fill="currentColor"/>
+                                    <circle cx="15" cy="10.5" r="1" fill="currentColor"/>
+                                </svg>
+                            </span>
+                            <strong>Foro</strong>
+                            <small>Resuelve dudas</small>
+                        </button>
+
+                        <button class="quick-action" data-action="eventos">
+                            <span class="qa-icon pink">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 3L14.8 8.7L21 9.6L16.5 14L17.6 20.2L12 17.2L6.4 20.2L7.5 14L3 9.6L9.2 8.7L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <strong>Eventos</strong>
+                            <small>No te lo pierdas</small>
+                        </button>
+
+                    </div>
+
+                </section>
+
+                <!-- BLOQUES INFERIORES -->
+                <section class="bottom-grid">
+
+                    <article class="glass-card progress-card">
+                        <h3>Tu progreso</h3>
+
+                        <div class="progress-content">
+                            <div class="circle-progress" id="circle-progress">
+                                <span id="progress-percent">0%</span>
+                            </div>
+
+                            <div class="steps-list">
+                                <strong>Estado de prematrícula</strong>
+                                <p>Seguimiento visual del proceso.</p>
+                                <span>✅ Datos personales</span>
+                                <span>✅ Documentación</span>
+                                <span>🔵 Revisión</span>
+                                <span>🔒 Confirmación final</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="glass-card activity-card">
+                        <h3>Resumen de actividad</h3>
+
+                        <div class="bar-item">
+                            <span>Turnos activos</span>
+                            <div class="bar"><div id="bar-turnos"></div></div>
+                        </div>
+
+                        <div class="bar-item">
+                            <span>Documentos pendientes</span>
+                            <div class="bar"><div id="bar-documentos"></div></div>
+                        </div>
+
+                        <div class="bar-item">
+                            <span>Notificaciones</span>
+                            <div class="bar"><div id="bar-notificaciones"></div></div>
+                        </div>
+
+                        <div class="bar-item">
+                            <span>Prematrícula</span>
+                            <div class="bar"><div id="bar-prematricula"></div></div>
+                        </div>
+                    </article>
+
+                    <article class="challenge-card">
+                        <div>
+                            <h3>Reto semanal</h3>
+                            <p>Completa tus acciones pendientes y mantén tu panel al día.</p>
+                            <strong id="reto-count">0 / 5 completadas</strong>
+
+                            <div class="mini-progress white">
+                                <div id="reto-progress" style="width: 45%"></div>
+                            </div>
+
+                            <button type="button" class="btn-glass small-btn" data-action="retos">Ver retos →</button>
+                        </div>
+                    </article>
+
+                </section>
+
+                <!-- LISTAS OPCIONALES -->
+                <section class="lists-grid">
+
+                    <article class="glass-card">
+                        <h3>Próximo turno</h3>
+                        <div id="proximo-turno-container"></div>
+                    </article>
+
+                    <article class="glass-card">
+                        <h3>Turnos activos</h3>
+                        <div id="turnos-activos-list"></div>
+                    </article>
+
+                    <article class="glass-card">
+                        <h3>Documentos pendientes</h3>
+                        <div id="documentos-pendientes-list"></div>
+                    </article>
+
+                </section>
+
+            </div>
+
+            <!-- COLUMNA DERECHA -->
+            <aside class="right-dashboard">
+
+                <section class="assistant-card">
+
+                    <div class="section-title-row">
+                        <h3>Tu asistente inteligente</h3>
+                        <span class="beta-badge">BETA</span>
+                    </div>
+
+                    <div class="assistant-header">
+                        <div class="assistant-message">
+                            <p>¡Hola! Soy tu asistente.</p>
+                            <p>Te ayudo con tus trámites.</p>
+                        </div>
+
+                        <div class="bot-avatar">🤖</div>
+                    </div>
+
+                    <div class="assistant-list" id="asistente-list">
+                        <div class="assistant-item">
+                            <span>⏳</span>
+                            <div>
+                                <strong>Cargando recomendaciones...</strong>
+                                <p>Un momento</p>
+                            </div>
+                            <b>›</b>
+                        </div>
+                    </div>
+
+                </section>
+
+                <section class="map-card">
+
+                    <div class="section-title-row">
+                        <h3>¿Cómo llegar al centro?</h3>
+                        <button type="button" class="soft-btn" id="btn-usar-ubicacion">Usar ubicación</button>
+                    </div>
+
+                    <div id="mapa-centro" class="map-placeholder">
+                        <div>
+                            <strong>🗺️ Mapa del centro</strong>
+                            <p>Configura Google Maps para ver la ruta integrada.</p>
+                        </div>
+                    </div>
+
+                    <div class="distance-box" id="distancia-centro">
+                        📍 Usa tu ubicación para calcular la distancia al centro.
+                    </div>
+
+                    <button type="button" class="btn-gradient full" id="btn-checkin">
+                        Activa tu ubicación primero
+                    </button>
+
+                </section>
+
+                <section class="events-card">
+
+                    <div class="section-title-row">
+                        <h3>Próximos eventos</h3>
+                        <button type="button" class="link-btn" data-action="calendario">Ver calendario</button>
+                    </div>
+
+                    <div class="event-item">
+                        <div class="event-date">
+                            <span>MAY</span>
+                            <strong>21</strong>
+                        </div>
+
+                        <div>
+                            <strong>Revisión de documentación</strong>
+                            <p>Consulta tus documentos pendientes</p>
+                        </div>
+
+                        <span class="tag important">Importante</span>
+                    </div>
+
+                    <div class="event-item">
+                        <div class="event-date">
+                            <span>MAY</span>
+                            <strong>23</strong>
+                        </div>
+
+                        <div>
+                            <strong>Proceso de matrícula</strong>
+                            <p>Estado y seguimiento</p>
+                        </div>
+
+                        <span class="tag info">Info</span>
+                    </div>
+
+                </section>
+
+            </aside>
+
+        </section>
+
+    </main>
+
+</div>
+
+<!-- CONFIG BASE -->
+<script src="js/config.js"></script>
+
+<!-- CARGA CONTROLADA DE SCRIPTS -->
+<script>
+    function cargarScript(src) {
+        return new Promise((resolve) => {
+            const script = document.createElement("script");
+            script.src = src;
+
+            script.onload = () => {
+                console.log("Script cargado:", src);
+                resolve();
+            };
+
+            script.onerror = () => {
+                console.warn("No se pudo cargar:", src);
+                resolve();
+            };
+
+            document.body.appendChild(script);
+        });
+    }
+
+    async function cargarScriptsPanelAlumno() {
+        console.log('[HTML] Iniciando carga de scripts...');
+        await cargarScript("js/config.local.js");
+        await cargarScript("js/auth.js");
+        await cargarScript("js/api.js");
+        await cargarScript("js/components/mapa.js");
+        await cargarScript("js/pages/panel-alumno-premium.js");  // SOLO premium como JS principal
+        console.log('[HTML] ✅ Todos los scripts cargados');
+    }
+
+    cargarScriptsPanelAlumno();
+</script>
+
+</body>
+</html>

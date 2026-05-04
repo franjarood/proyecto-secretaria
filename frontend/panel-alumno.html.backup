@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Alumno - Secretaría Virtual</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/botones.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <style>
+    /* Estilos específicos del panel alumno */
+    .hero-image-card {
+      position: relative;
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      min-height: 240px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(139, 92, 246, 0.95));
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hero-image-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1562774053-701939374585?w=1200&h=400&fit=crop') center/cover;
+      opacity: 0.3;
+      z-index: 0;
+    }
+
+    .hero-image-content {
+      position: relative;
+      z-index: 1;
+      padding: var(--spacing-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+      color: white;
+    }
+
+    .hero-greeting {
+      font-size: 2rem;
+      font-weight: 700;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-message {
+      font-size: 1.125rem;
+      opacity: 0.95;
+      line-height: 1.6;
+      max-width: 600px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: var(--spacing-md);
+      flex-wrap: wrap;
+    }
+
+    .hero-info-cards {
+      position: absolute;
+      right: var(--spacing-xl);
+      top: var(--spacing-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .hero-info-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 12px 16px;
+      border-radius: var(--border-radius-md);
+      min-width: 150px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero-info-card-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .hero-info-card-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Item list styles */
+    .item-list {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius-sm);
+      transition: background var(--transition-fast);
+    }
+
+    .item-list:hover {
+      background: var(--accent-lighter);
+    }
+
+    .item-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      background: var(--accent-lighter);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .item-subtitle {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    /* Progress bar */
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .progress-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .progress-percentage {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--accent-start);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-main);
+      border-radius: var(--border-radius-full);
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+      transition: width var(--transition-slow);
+      border-radius: var(--border-radius-full);
+    }
+
+    /* Turno destacado */
+    .turno-destacado {
+      padding: var(--spacing-lg);
+      border-radius: var(--border-radius-md);
+      background: var(--accent-lighter);
+      border-left: 4px solid var(--accent-start);
+    }
+
+    .turno-destacado-header {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .turno-destacado-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: var(--accent-light);
+      border-radius: var(--border-radius-md);
+      flex-shrink: 0;
+    }
+
+    .turno-destacado-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .turno-destacado-numero {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .turno-destacado-body {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .turno-destacado-fecha {
+      font-size: 0.9375rem;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: var(--spacing-2xl);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .empty-state-text {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    /* Ubicación */
+    .ubicacion-info {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius-md);
+      background: var(--bg-main);
+    }
+
+    .ubicacion-info.dentro-radio {
+      background: var(--bg-success);
+      border-left: 4px solid var(--color-success);
+    }
+
+    .ubicacion-info.fuera-radio {
+      background: var(--bg-warning);
+      border-left: 4px solid var(--color-warning);
+    }
+
+    .ubicacion-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .ubicacion-text {
+      flex: 1;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .hero-info-cards {
+        position: static;
+        flex-direction: row;
+        margin-top: var(--spacing-lg);
+      }
+
+      .hero-info-card {
+        flex: 1;
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body data-rol="alumno">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">🎓</div>
+      <div class="sidebar-brand-text">Secretaría Virtual</div>
+    </div>
+    <nav id="sidebarNav" class="sidebar-nav"></nav>
+    <div id="sidebarUser" class="sidebar-user"></div>
+  </aside>
+
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- HEADER -->
+    <header class="header">
+      <button id="toggleSidebar" class="header-toggle">☰</button>
+      <div class="header-search">
+        <svg class="header-search-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Buscar en la plataforma...">
+        <kbd class="header-search-shortcut">⌘K</kbd>
+      </div>
+      <div class="header-actions">
+        <button id="notificationsBtn" class="header-action-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+          </svg>
+          <span class="notification-count">0</span>
+        </button>
+        <div id="headerUser" class="header-user"></div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="content-wrapper">
+
+      <!-- HERO DINÁMICO -->
+      <div class="hero-image-card">
+        <div class="hero-image-content">
+          <div>
+            <h1 class="hero-greeting">
+              ¡Hola, <span id="hero-nombre-usuario">Alumno</span>! 👋
+            </h1>
+            <p class="hero-message" id="hero-message">
+              Todo lo que necesitas, en un solo lugar.
+            </p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="PanelAlumno.handleReservarTurno()">
+              📅 Reservar turno
+            </button>
+            <button class="btn btn-secondary" id="btn-usar-ubicacion">
+              📍 Usar mi ubicación
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-info-cards">
+          <div class="hero-info-card">
+            <div class="hero-info-card-label" id="current-time">--:--</div>
+            <div class="hero-info-card-value" id="current-date">--</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS GRID -->
+      <div class="grid-cards-4" style="margin-top: var(--spacing-xl);">
+        <div class="card card-stat" id="stat-turnos">
+          <div class="card-stat-header">
+            <div class="card-stat-icon-wrapper blue">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="card-stat-content">
+            <div class="card-stat-label">Turnos activos</div>
+            <div class="card-stat-value">0</div>
+          </div>
+        </div>
+
+        <div class="card card-stat" id="stat-documentos">
+          <div class="card-stat-header">
+            <div class="card-stat-icon-wrapper purple">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="card-stat-content">
+            <div class="card-stat-label">Documentos pendientes</div>
+            <div class="card-stat-value">0</div>
+          </div>
+        </div>
+
+        <div class="card card-stat" id="stat-notificaciones">
+          <div class="card-stat-header">
+            <div class="card-stat-icon-wrapper orange">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="card-stat-content">
+            <div class="card-stat-label">Notificaciones</div>
+            <div class="card-stat-value">0</div>
+          </div>
+        </div>
+
+        <div class="card card-stat" id="stat-prematricula">
+          <div class="card-stat-header">
+            <div class="card-stat-icon-wrapper green">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="card-stat-content">
+            <div class="card-stat-label">Prematrícula</div>
+            <div class="card-stat-value">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAYOUT CON SIDEBAR -->
+      <div class="layout-with-sidebar" style="margin-top: var(--spacing-xl);">
+
+        <!-- COLUMNA PRINCIPAL -->
+        <div class="layout-main">
+
+          <!-- PRÓXIMO TURNO -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">📅 Próximo turno</h3>
+            </div>
+            <div class="card-body">
+              <div id="proximo-turno-container">
+                <p class="text-secondary text-center" style="padding: 24px;">Cargando...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TURNOS ACTIVOS -->
+          <div class="card" style="margin-top: var(--spacing-lg);">
+            <div class="card-header">
+              <h3 class="card-title">🎫 Tus turnos activos</h3>
+            </div>
+            <div class="card-body">
+              <div id="turnos-activos-list">
+                <p class="text-secondary text-center" style="padding: 24px;">Cargando...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- DOCUMENTOS PENDIENTES -->
+          <div class="card" style="margin-top: var(--spacing-lg);">
+            <div class="card-header">
+              <h3 class="card-title">📄 Documentos pendientes</h3>
+            </div>
+            <div class="card-body">
+              <div id="documentos-pendientes-list">
+                <p class="text-secondary text-center" style="padding: 24px;">Cargando...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ESTADO PREMATRÍCULA -->
+          <div class="card" style="margin-top: var(--spacing-lg);">
+            <div class="card-header">
+              <h3 class="card-title">📝 Estado de prematrícula</h3>
+            </div>
+            <div class="card-body">
+              <div id="prematricula-progress">
+                <p class="text-secondary text-center" style="padding: 24px;">Cargando...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- UBICACIÓN Y CHECK-IN -->
+          <div class="card" style="margin-top: var(--spacing-lg);">
+            <div class="card-header">
+              <h3 class="card-title">📍 Distancia al centro</h3>
+            </div>
+            <div class="card-body">
+              <div id="distancia-centro">
+                <p class="text-secondary text-center" style="padding: 24px;">
+                  Usa el botón "Usar mi ubicación" para calcular tu distancia al centro
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SIDEBAR DERECHO: ASISTENTE -->
+        <div class="layout-sidebar">
+          <div class="card card-assistant">
+            <div class="card-assistant-content">
+              <div class="card-assistant-header">
+                <div class="card-assistant-title">
+                  🤖 Tu asistente inteligente
+                </div>
+                <span class="card-assistant-badge">BETA</span>
+              </div>
+              <div class="card-assistant-body">
+                ¡Hola! Soy tu asistente.<br>
+                ¿En qué puedo ayudarte hoy?
+              </div>
+              <div id="asistente-list" class="card-assistant-list">
+                <p class="text-secondary text-center" style="padding: 24px;">Cargando...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACCESOS RÁPIDOS -->
+          <div class="card" style="margin-top: var(--spacing-lg);">
+            <div class="card-header">
+              <h3 class="card-title">⚡ Accesos rápidos</h3>
+            </div>
+            <div class="card-body" style="padding: var(--spacing-md);">
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm);">
+                <button class="btn btn-sm btn-secondary" onclick="PanelAlumno.handleAccesoRapido('turnos')" style="justify-content: center;">
+                  🎫 Turnos
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="PanelAlumno.handleAccesoRapido('matricula')" style="justify-content: center;">
+                  📝 Matrícula
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="PanelAlumno.handleAccesoRapido('foro')" style="justify-content: center;">
+                  💬 Foro
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="PanelAlumno.handleAccesoRapido('eventos')" style="justify-content: center;">
+                  🎉 Eventos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/components/sidebar.js"></script>
+  <script src="js/components/header.js"></script>
+  <script src="js/pages/panel-alumno.js"></script>
+
+  <script>
+    // Verificar autenticación
+    if (!Auth.requireAuth()) {
+      // Redirige automáticamente
+    } else {
+      const userData = Auth.getCurrentUser();
+
+      // Inicializar Sidebar
+      const menuItems = [
+        { icon: '🏠', label: 'Inicio', href: 'panel-alumno.html', active: true },
+        { icon: '🎫', label: 'Turnos', href: '#turnos' },
+        { icon: '📝', label: 'Matrícula', href: '#matricula' },
+        { icon: '📄', label: 'Documentación', href: '#documentacion' },
+        { icon: '📍', label: 'Check-in', href: '#checkin' },
+        { icon: '🤖', label: 'Asistente IA', href: '#asistente' },
+        { icon: '💬', label: 'Foro académico', href: '#foro' },
+        { icon: '👥', label: 'StudyMatch', href: '#studymatch' },
+        { icon: '🛒', label: 'Mercado interno', href: '#mercado' },
+        { icon: '🎉', label: 'Eventos', href: '#eventos' },
+        { icon: '🔔', label: 'Notificaciones', href: '#notificaciones' }
+      ];
+
+      Sidebar.init(menuItems, userData);
+      Header.init(userData, 0);
+    }
+  </script>
+
+</body>
+</html>
