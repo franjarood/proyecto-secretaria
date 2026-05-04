@@ -38,14 +38,33 @@ public class SecurityConfig {
                 .userDetailsService(customUserDetailsService)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/tipos-tramite", "/tipos-tramite/**").permitAll()
+
+                        // Públicos reales (sin login)
+                        .requestMatchers("/clima/**").permitAll()
+                        .requestMatchers("/public/**").permitAll()
+
+                        // Catálogos / configuración (coherente con @PreAuthorize de los controllers)
+                        .requestMatchers("/tipos-tramite", "/tipos-tramite/**")
+                        .hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
+
+                        .requestMatchers("/ciclos/**")
+                        .hasAnyRole("ADMIN", "SECRETARIA", "USUARIO", "ALUMNO")
+
+                        .requestMatchers("/cursos/**")
+                        .hasAnyRole("ADMIN", "SECRETARIA", "USUARIO", "ALUMNO")
+
+                        .requestMatchers("/tipos-matricula/**")
+                        .hasAnyRole("ADMIN", "SECRETARIA", "USUARIO", "ALUMNO")
+
+                        .requestMatchers("/documentos-requeridos/**")
+                        .hasAnyRole("ADMIN", "SECRETARIA", "USUARIO", "ALUMNO")
                         .requestMatchers("/usuarios/me").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
                         .requestMatchers("/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/incidencias/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE")
                         .requestMatchers("/turnos/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
                         .requestMatchers("/reservas/**").hasAnyRole("ADMIN", "SECRETARIA", "USUARIO", "ALUMNO")
                         .requestMatchers("/notificaciones/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
 
