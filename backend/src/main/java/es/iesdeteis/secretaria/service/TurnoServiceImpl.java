@@ -780,10 +780,10 @@ public class TurnoServiceImpl implements TurnoService {
     // =========================
 
     // Coordenadas y radio del centro (configurables por properties)
-    @Value("${app.centro.lat:42.2406}")
+    @Value("${app.centro.lat:42.25222480662193}")
     private double centroLatitud;
 
-    @Value("${app.centro.lon:-8.7207}")
+    @Value("${app.centro.lon:-8.690217970641129}")
     private double centroLongitud;
 
     @Value("${app.centro.radio-checkin-metros:500}")
