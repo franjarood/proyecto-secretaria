@@ -11,4 +11,7 @@ public interface ClimaService {
      * Obtiene el clima actual de la ubicación configurada.
      */
     ClimaResponseDTO obtenerClimaActual();
+
+
+    ClimaResponseDTO obtenerClimaPorCoordenadas(double lat, double lon);
 }

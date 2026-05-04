@@ -64,6 +64,40 @@ public class ClimaServiceImpl implements ClimaService {
         }
     }
 
+    @Override
+    public ClimaResponseDTO obtenerClimaPorCoordenadas(double lat, double lon) {
+
+        // 1) Validación básica de rangos
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            throw new IllegalArgumentException("Coordenadas inválidas: lat debe estar entre -90 y 90, lon entre -180 y 180");
+        }
+
+        // 2) Verificar si la API key está configurada
+        if (apiKey == null || apiKey.trim().isEmpty() || apiKey.equals("CAMBIAR_POR_TU_API_KEY")) {
+            return crearRespuestaFallback();
+        }
+
+        try {
+            // 3) Construir URL con las coords del usuario (NO las del centro)
+            String url = baseUrl + "?lat=" + lat + "&lon=" + lon +
+                    "&appid=" + apiKey + "&units=metric&lang=es";
+
+            // 4) Llamar a la API
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+            if (response != null) {
+                return mapearRespuestaOpenWeather(response);
+            } else {
+                return crearRespuestaFallback();
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error al obtener clima por coordenadas de OpenWeather: " + e.getMessage());
+            return crearRespuestaFallback();
+        }
+    }
+
     /**
      * Mapea la respuesta de OpenWeather a nuestro DTO
      */
