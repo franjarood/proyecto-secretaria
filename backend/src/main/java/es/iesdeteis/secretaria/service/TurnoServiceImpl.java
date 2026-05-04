@@ -8,6 +8,7 @@ import es.iesdeteis.secretaria.repository.ReservaTurnoRepository;
 import es.iesdeteis.secretaria.repository.TipoTramiteRepository;
 import es.iesdeteis.secretaria.repository.TurnoRepository;
 import es.iesdeteis.secretaria.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -778,10 +779,15 @@ public class TurnoServiceImpl implements TurnoService {
     // CHECK-IN GEOLOCALIZADO
     // =========================
 
-    // Coordenadas fijas del centro (ajustables en futuro a config/BD).
-    private static final double CENTRO_LATITUD = 42.0;
-    private static final double CENTRO_LONGITUD = -8.0;
-    private static final double RADIO_METROS = 150.0;
+    // Coordenadas y radio del centro (configurables por properties)
+    @Value("${app.centro.lat:42.2406}")
+    private double centroLatitud;
+
+    @Value("${app.centro.lon:-8.7207}")
+    private double centroLongitud;
+
+    @Value("${app.centro.radio-checkin-metros:500}")
+    private double radioCheckinMetros;
 
     @Override
     public CheckInGeoResponseDTO checkInGeolocalizado(Long idTurno, CheckInGeoRequestDTO request) {
@@ -794,9 +800,9 @@ public class TurnoServiceImpl implements TurnoService {
             throw new UbicacionNoValidaException("La precisión de la ubicación es demasiado baja (" + request.getPrecisionMetros() + " m)");
         }
 
-        double distancia = distanciaMetros(CENTRO_LATITUD, CENTRO_LONGITUD, request.getLatitud(), request.getLongitud());
+        double distancia = distanciaMetros(centroLatitud, centroLongitud, request.getLatitud(), request.getLongitud());
 
-        if (distancia > RADIO_METROS) {
+        if (distancia > radioCheckinMetros) {
             throw new UsuarioFueraDelCentroException("Estás fuera del centro. Distancia aproximada: " + Math.round(distancia) + " m");
         }
 

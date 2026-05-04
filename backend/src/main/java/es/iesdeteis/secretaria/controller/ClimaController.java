@@ -2,7 +2,6 @@ package es.iesdeteis.secretaria.controller;
 
 import es.iesdeteis.secretaria.dto.ClimaResponseDTO;
 import es.iesdeteis.secretaria.service.ClimaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/clima")
 public class ClimaController {
 
-    @Autowired
-    private ClimaService climaService;
+    private final ClimaService climaService;
+
+    public ClimaController(ClimaService climaService) {
+        this.climaService = climaService;
+    }
 
     /**
      * GET /clima/actual
