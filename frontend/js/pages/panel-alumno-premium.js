@@ -13,9 +13,8 @@ const PanelAlumnoPremium = {
   usuarioId: null,
   dashboardData: null,
   climaData: null,
-  ubicacionCentro: (APP_CONFIG.GOOGLE_MAPS && APP_CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO)
-    ? APP_CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO
-    : { lat: 42.25222480662193, lng: -8.690217970641129, nombre: 'Centro educativo' },
+  // Fuente única: CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO (definido en js/config.js)
+  ubicacionCentro: null,
   ubicacionUsuario: null,
 
   // ==================== INICIALIZACIÓN ====================
@@ -39,6 +38,17 @@ const PanelAlumnoPremium = {
 
       this.usuarioId = session.userData.id;
       console.log('✓ Usuario ID:', this.usuarioId);
+
+      // Coordenadas del centro (fuente única: js/config.js)
+      this.ubicacionCentro = (APP_CONFIG.GOOGLE_MAPS && APP_CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO)
+        ? APP_CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO
+        : null;
+
+      if (!this.ubicacionCentro || typeof this.ubicacionCentro.lat !== 'number' || typeof this.ubicacionCentro.lng !== 'number') {
+        console.error('❌ CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO no está configurado correctamente');
+        // Degradar sin romper el panel (la geolocalización/check-in no funcionarán bien sin centro)
+        this.ubicacionCentro = { lat: 0, lng: 0, nombre: 'Centro educativo' };
+      }
 
       // Renderizar bienvenida
       this.renderWelcome(session.userData);

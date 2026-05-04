@@ -7,7 +7,8 @@ const PanelAlumno = {
   usuarioId: null,
   dashboardData: null,
   recomendaciones: null,
-  ubicacionCentro: { lat: 42.2406, lng: -8.7207 }, // Coordenadas IES de Teis, Vigo
+  // Fuente única: CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO (definido en js/config.js)
+  ubicacionCentro: null,
 
   // ==================== INICIALIZACIÓN ====================
 
@@ -20,6 +21,14 @@ const PanelAlumno = {
       }
 
       this.usuarioId = session.userData.id;
+
+      // Coordenadas del centro (fuente única: js/config.js)
+      if (window.CONFIG && window.CONFIG.GOOGLE_MAPS && window.CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO) {
+        this.ubicacionCentro = window.CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO;
+      } else {
+        console.error('CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO no está configurado.');
+        this.ubicacionCentro = { lat: 0, lng: 0 };
+      }
 
       // Renderizar elementos inmediatos
       this.renderWelcome(session.userData);

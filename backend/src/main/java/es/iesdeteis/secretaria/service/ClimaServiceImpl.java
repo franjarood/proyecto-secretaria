@@ -21,10 +21,10 @@ public class ClimaServiceImpl implements ClimaService {
     @Value("${openweather.base-url:https://api.openweathermap.org/data/2.5/weather}")
     private String baseUrl;
 
-    @Value("${openweather.lat:42.2406}")
+    @Value("${openweather.lat}")
     private String latitud;
 
-    @Value("${openweather.lon:-8.7207}")
+    @Value("${openweather.lon}")
     private String longitud;
 
     private final RestTemplate restTemplate;

@@ -18,10 +18,19 @@ const PanelAlumnoPremium = {
     toastTimeout: null,
 
     CENTRO: {
-        lat: 42.2406,
-        lng: -8.7207,
-        nombre: "IES de Teis - Vigo",
-        radioCheckinMetros: 500
+        // Fuente única: CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO (definido en js/config.js)
+        lat: (window.CONFIG && window.CONFIG.GOOGLE_MAPS && window.CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO)
+            ? window.CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO.lat
+            : 0,
+        lng: (window.CONFIG && window.CONFIG.GOOGLE_MAPS && window.CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO)
+            ? window.CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO.lng
+            : 0,
+        nombre: (window.CONFIG && window.CONFIG.GOOGLE_MAPS && window.CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO && window.CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO.nombre)
+            ? window.CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO.nombre
+            : "Centro educativo",
+        radioCheckinMetros: (window.CONFIG && window.CONFIG.GOOGLE_MAPS && window.CONFIG.GOOGLE_MAPS.RADIO_CHECKIN_METROS)
+            ? Number(window.CONFIG.GOOGLE_MAPS.RADIO_CHECKIN_METROS)
+            : 500
     },
 
     async init() {
