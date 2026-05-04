@@ -26,7 +26,7 @@ public class TipoTramiteController {
     }
 
     // Obtener por ID
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     @GetMapping("/{id}")
     public Optional<TipoTramite> findById(@PathVariable Long id) {
         return tipoTramiteService.findById(id);

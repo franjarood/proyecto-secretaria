@@ -154,8 +154,10 @@ public class AsistenteServiceImpl implements AsistenteService {
             return;
         }
 
-        if (actual.getRol() == es.iesdeteis.secretaria.model.RolUsuario.ALUMNO && !actual.getId().equals(usuarioId)) {
-            throw new AccessDeniedException("No puedes acceder al asistente de otro alumno");
+        if ((actual.getRol() == es.iesdeteis.secretaria.model.RolUsuario.USUARIO
+                || actual.getRol() == es.iesdeteis.secretaria.model.RolUsuario.ALUMNO)
+                && !actual.getId().equals(usuarioId)) {
+            throw new AccessDeniedException("No puedes acceder al asistente de otro usuario");
         }
     }
 }

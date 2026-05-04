@@ -30,7 +30,7 @@ public class TurnoController {
     // MÉTODOS
 
     // Obtener turnos según el rol del usuario autenticado
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     @GetMapping
     public List<TurnoResponseDTO> getTurnos() {
         return turnoService.findTurnosSegunRol().stream()
@@ -39,7 +39,7 @@ public class TurnoController {
     }
 
     // Obtener turno por ID según el rol del usuario autenticado
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     @GetMapping("/{id}")
     public TurnoResponseDTO getTurnoById(@PathVariable Long id) {
         Turno turno = turnoService.findTurnoByIdSegunRol(id)
@@ -88,7 +88,7 @@ public class TurnoController {
     }
 
     // Calcular tiempo de espera real
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     @GetMapping("/{id}/espera")
     public Integer getRealWaitingTime(@PathVariable Long id) {
         return turnoService.calculateRealWaitingTime(id);
@@ -109,7 +109,7 @@ public class TurnoController {
     }
 
     // Obtener posición del turno en la cola
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     @GetMapping("/{id}/posicion")
     public PosicionTurnoDTO getPosition(@PathVariable Long id) {
 
@@ -120,7 +120,7 @@ public class TurnoController {
     }
 
     // Obtener estado completo del turno
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     @GetMapping("/{id}/estado")
     public EstadoTurnoResponseDTO getEstado(@PathVariable Long id) {
 
@@ -186,7 +186,7 @@ public class TurnoController {
     }
 
     // Check-in geolocalizado (adicional)
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     @PostMapping("/{id}/checkin-geo")
     public CheckInGeoResponseDTO checkInGeo(@PathVariable Long id,
                                             @Valid @RequestBody CheckInGeoRequestDTO dto) {

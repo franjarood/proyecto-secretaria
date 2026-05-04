@@ -36,7 +36,7 @@ public class PreMatriculaController {
     }
 
     // Crear
-    @PreAuthorize("hasAnyRole('ALUMNO', 'ADMIN', 'SECRETARIA')")
+    @PreAuthorize("hasAnyRole('USUARIO', 'ALUMNO', 'ADMIN', 'SECRETARIA')")
     @PostMapping
     public PreMatricula create(@Valid @RequestBody PreMatricula preMatricula) {
         return preMatriculaService.save(preMatricula);

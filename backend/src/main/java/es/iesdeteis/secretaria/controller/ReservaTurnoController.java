@@ -23,7 +23,7 @@ public class ReservaTurnoController {
     }
 
     // Obtener reservas según el rol del usuario autenticado
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'USUARIO', 'ALUMNO')")
     @GetMapping
     public List<ReservaTurnoResponseDTO> getReservas() {
         return reservaTurnoService.findReservasSegunRol().stream()
@@ -32,7 +32,7 @@ public class ReservaTurnoController {
     }
 
     // Obtener reserva por ID según el rol del usuario autenticado
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'USUARIO', 'ALUMNO')")
     @GetMapping("/{id}")
     public ReservaTurnoResponseDTO getReservaById(@PathVariable Long id) {
         ReservaTurno reserva = reservaTurnoService.findReservaByIdSegunRol(id)
@@ -42,7 +42,7 @@ public class ReservaTurnoController {
     }
 
     // Crear reserva
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'USUARIO', 'ALUMNO')")
     @PostMapping
     public ReservaTurnoResponseDTO saveReserva(@Valid @RequestBody ReservaTurnoCreateDTO dto) {
         ReservaTurno reservaGuardada = reservaTurnoService.saveFromDTO(dto);

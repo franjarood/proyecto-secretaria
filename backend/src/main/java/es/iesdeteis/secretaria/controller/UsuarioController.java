@@ -77,7 +77,7 @@ public class UsuarioController {
     // MÉTODOS AUXILIARES
 
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     public UsuarioActualDTO obtenerUsuarioActual() {
         return usuarioService.obtenerUsuarioActual();
     }

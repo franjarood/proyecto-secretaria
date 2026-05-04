@@ -145,6 +145,9 @@ public class PreMatriculaServiceImpl implements PreMatriculaService {
                     guardada.getUsuario()
             );
 
+            // 🎓 Convertir USUARIO → ALUMNO al validar matrícula
+            convertirUsuarioEnAlumnoSiProcede(guardada);
+
         } else if (nuevoEstado == EstadoPreMatricula.RECHAZADA) {
 
             notificacionService.crearNotificacionInterna(
@@ -162,7 +165,7 @@ public class PreMatriculaServiceImpl implements PreMatriculaService {
 
 
     // =========================
-    // MÉTODO AUXILIAR
+    // MÉTODOS AUXILIARES
     // =========================
 
     private Usuario obtenerUsuarioAutenticado() {
@@ -172,5 +175,14 @@ public class PreMatriculaServiceImpl implements PreMatriculaService {
 
         return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+    }
+
+    private void convertirUsuarioEnAlumnoSiProcede(PreMatricula matricula) {
+        Usuario usuario = matricula.getUsuario();
+
+        if (usuario != null && usuario.getRol() == RolUsuario.USUARIO) {
+            usuario.setRol(RolUsuario.ALUMNO);
+            usuarioRepository.save(usuario);
+        }
     }
 }

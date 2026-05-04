@@ -23,43 +23,43 @@ public class MercadoController {
     }
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ALUMNO')")
     public ResponseEntity<List<AnuncioMercadoResponseDTO>> listarDisponibles() {
         return ResponseEntity.ok(mercadoService.listarDisponibles());
     }
 
     @GetMapping("/mis-anuncios")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ALUMNO')")
     public ResponseEntity<List<AnuncioMercadoResponseDTO>> listarMisAnuncios() {
         return ResponseEntity.ok(mercadoService.listarMisAnuncios());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ALUMNO')")
     public ResponseEntity<AnuncioMercadoResponseDTO> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(mercadoService.obtenerPorId(id));
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ALUMNO')")
     public ResponseEntity<AnuncioMercadoResponseDTO> crear(@Valid @RequestBody AnuncioMercadoRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(mercadoService.crear(dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ALUMNO')")
     public ResponseEntity<AnuncioMercadoResponseDTO> actualizar(@PathVariable Long id, @Valid @RequestBody AnuncioMercadoRequestDTO dto) {
         return ResponseEntity.ok(mercadoService.actualizar(id, dto));
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ALUMNO')")
     public ResponseEntity<AnuncioMercadoResponseDTO> cambiarEstado(@PathVariable Long id, @RequestParam EstadoAnuncioMercado estado) {
         return ResponseEntity.ok(mercadoService.cambiarEstado(id, estado));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ALUMNO')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         mercadoService.eliminar(id);
         return ResponseEntity.noContent().build();

@@ -30,7 +30,7 @@ public class DocumentoController {
     // CREAR DOCUMENTO
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     public DocumentoResponseDTO crearDocumento(@Valid @RequestBody DocumentoCreateDTO dto) {
         return documentoService.crearDocumento(dto);
     }
@@ -45,25 +45,25 @@ public class DocumentoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     public DocumentoResponseDTO obtenerPorId(@PathVariable Long id) {
         return documentoService.obtenerPorId(id);
     }
 
     @GetMapping("/usuario/{usuarioId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     public List<DocumentoResponseDTO> listarPorUsuario(@PathVariable Long usuarioId) {
         return documentoService.listarPorUsuario(usuarioId);
     }
 
     @GetMapping("/prematricula/{preMatriculaId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     public List<DocumentoResponseDTO> listarPorPreMatricula(@PathVariable Long preMatriculaId) {
         return documentoService.listarPorPreMatricula(preMatriculaId);
     }
 
     @GetMapping("/turno/{turnoId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     public List<DocumentoResponseDTO> listarPorTurno(@PathVariable Long turnoId) {
         return documentoService.listarPorTurno(turnoId);
     }
@@ -75,7 +75,7 @@ public class DocumentoController {
     }
 
     @GetMapping("/mis-documentos")
-    @PreAuthorize("hasRole('ALUMNO')")
+    @PreAuthorize("hasAnyRole('USUARIO', 'ALUMNO')")
     public List<DocumentoResponseDTO> obtenerMisDocumentos() {
         return documentoService.obtenerMisDocumentos();
     }

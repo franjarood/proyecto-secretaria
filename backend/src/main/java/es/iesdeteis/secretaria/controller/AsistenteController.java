@@ -17,7 +17,7 @@ public class AsistenteController {
         this.asistenteService = asistenteService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     @GetMapping("/usuario/{usuarioId}")
     public List<AsistenteRecomendacionDTO> obtenerRecomendaciones(@PathVariable Long usuarioId) {
         return asistenteService.obtenerRecomendacionesUsuario(usuarioId);

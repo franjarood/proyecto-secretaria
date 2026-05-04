@@ -39,12 +39,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/tipos-tramite", "/tipos-tramite/**").permitAll()
-                        .requestMatchers("/usuarios/me").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "ALUMNO")
+                        .requestMatchers("/usuarios/me").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
                         .requestMatchers("/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/incidencias/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE")
-                        .requestMatchers("/turnos/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "ALUMNO")
-                        .requestMatchers("/reservas/**").hasAnyRole("ADMIN", "SECRETARIA", "ALUMNO")
-                        .requestMatchers("/notificaciones/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "ALUMNO")
+                        .requestMatchers("/turnos/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
+                        .requestMatchers("/reservas/**").hasAnyRole("ADMIN", "SECRETARIA", "USUARIO", "ALUMNO")
+                        .requestMatchers("/notificaciones/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
                         .anyRequest().permitAll()
                 )
                 .httpBasic(Customizer.withDefaults());

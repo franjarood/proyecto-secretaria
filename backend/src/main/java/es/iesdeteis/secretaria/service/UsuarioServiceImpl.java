@@ -140,6 +140,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         dto.setNombre(usuario.getNombre());
         dto.setApellidos(usuario.getApellidos());
         dto.setEmail(usuario.getEmail());
+        dto.setRol(usuario.getRol());
 
         return dto;
     }

@@ -380,8 +380,9 @@ public class DashboardServiceImpl implements DashboardService {
             return;
         }
 
-        if (actual.getRol() == RolUsuario.ALUMNO && !actual.getId().equals(usuarioId)) {
-            throw new AccessDeniedException("No puedes acceder al dashboard de otro alumno");
+        if ((actual.getRol() == RolUsuario.USUARIO || actual.getRol() == RolUsuario.ALUMNO)
+                && !actual.getId().equals(usuarioId)) {
+            throw new AccessDeniedException("No puedes acceder al dashboard de otro usuario");
         }
     }
 }

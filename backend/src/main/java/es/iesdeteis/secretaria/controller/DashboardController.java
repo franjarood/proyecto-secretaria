@@ -18,7 +18,7 @@ public class DashboardController {
         this.dashboardService = dashboardService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'ALUMNO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE', 'USUARIO', 'ALUMNO')")
     @GetMapping("/alumno/{usuarioId}")
     public DashboardAlumnoDTO dashboardAlumno(@PathVariable Long usuarioId) {
         return dashboardService.obtenerDashboardAlumno(usuarioId);

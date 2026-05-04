@@ -110,6 +110,8 @@ public class DocumentoServiceImpl implements DocumentoService {
 
     @Override
     public List<DocumentoResponseDTO> listarPorUsuario(Long usuarioId) {
+        validarAccesoUsuario(usuarioId);
+
         return documentoRepository.findByUsuarioId(usuarioId)
                 .stream()
                 .map(this::convertirADTO)
@@ -118,6 +120,8 @@ public class DocumentoServiceImpl implements DocumentoService {
 
     @Override
     public List<DocumentoResponseDTO> listarPorPreMatricula(Long preMatriculaId) {
+        validarAccesoPreMatricula(preMatriculaId);
+
         return documentoRepository.findByPreMatriculaId(preMatriculaId)
                 .stream()
                 .map(this::convertirADTO)
@@ -126,6 +130,8 @@ public class DocumentoServiceImpl implements DocumentoService {
 
     @Override
     public List<DocumentoResponseDTO> listarPorTurno(Long turnoId) {
+        validarAccesoTurno(turnoId);
+
         return documentoRepository.findByTurnoId(turnoId)
                 .stream()
                 .map(this::convertirADTO)
@@ -244,7 +250,8 @@ public class DocumentoServiceImpl implements DocumentoService {
 
         Usuario usuarioActual = obtenerUsuarioAutenticado();
 
-        if (usuarioActual.getRol().name().equals("ALUMNO")) {
+        // USUARIO y ALUMNO solo pueden ver sus propios documentos
+        if (usuarioActual.getRol() == RolUsuario.USUARIO || usuarioActual.getRol() == RolUsuario.ALUMNO) {
 
             if (documento.getUsuario() == null ||
                     !documento.getUsuario().getId().equals(usuarioActual.getId())) {
@@ -316,5 +323,51 @@ public class DocumentoServiceImpl implements DocumentoService {
                 .stream()
                 .map(this::convertirADTO)
                 .toList();
+    }
+
+    private void validarAccesoUsuario(Long usuarioId) {
+        Usuario usuarioActual = obtenerUsuarioAutenticado();
+
+        // USUARIO y ALUMNO solo pueden ver sus propios documentos
+        if ((usuarioActual.getRol() == RolUsuario.USUARIO || usuarioActual.getRol() == RolUsuario.ALUMNO)
+                && !usuarioActual.getId().equals(usuarioId)) {
+            throw new DocumentoNoPerteneceUsuarioException(
+                    "No tienes permiso para acceder a los documentos de otro usuario"
+            );
+        }
+    }
+
+    private void validarAccesoPreMatricula(Long preMatriculaId) {
+        Usuario usuarioActual = obtenerUsuarioAutenticado();
+
+        // USUARIO y ALUMNO solo pueden ver documentos de su propia prematrícula
+        if (usuarioActual.getRol() == RolUsuario.USUARIO || usuarioActual.getRol() == RolUsuario.ALUMNO) {
+            PreMatricula preMatricula = preMatriculaRepository.findById(preMatriculaId)
+                    .orElseThrow(() -> new PreMatriculaNoEncontradaException("Prematrícula no encontrada"));
+
+            if (preMatricula.getUsuario() == null ||
+                    !preMatricula.getUsuario().getId().equals(usuarioActual.getId())) {
+                throw new DocumentoNoPerteneceUsuarioException(
+                        "No tienes permiso para acceder a los documentos de esta prematrícula"
+                );
+            }
+        }
+    }
+
+    private void validarAccesoTurno(Long turnoId) {
+        Usuario usuarioActual = obtenerUsuarioAutenticado();
+
+        // USUARIO y ALUMNO solo pueden ver documentos de su propio turno
+        if (usuarioActual.getRol() == RolUsuario.USUARIO || usuarioActual.getRol() == RolUsuario.ALUMNO) {
+            Turno turno = turnoRepository.findById(turnoId)
+                    .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
+
+            if (turno.getUsuario() == null ||
+                    !turno.getUsuario().getId().equals(usuarioActual.getId())) {
+                throw new DocumentoNoPerteneceUsuarioException(
+                        "No tienes permiso para acceder a los documentos de este turno"
+                );
+            }
+        }
     }
 }
