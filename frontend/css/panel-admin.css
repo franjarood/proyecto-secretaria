@@ -1,0 +1,238 @@
+/* =========================
+   PANEL ADMIN (BOOM)
+   ========================= */
+
+/* Fondo un poco más “premium” (sin romper el resto del sistema) */
+body[data-rol="admin"] .content-wrapper{
+  background:
+    radial-gradient(900px 450px at 20% 10%, rgba(99,102,241,.10), transparent 55%),
+    radial-gradient(850px 420px at 80% 25%, rgba(147,51,234,.10), transparent 55%);
+}
+
+/* Toolbar para el CRUD */
+.admin-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-md);
+}
+
+.admin-form{
+  display:grid;
+  grid-template-columns: 1.3fr .6fr 1fr .6fr auto;
+  gap: var(--spacing-md);
+  align-items:end;
+}
+
+.admin-field label{
+  display:block;
+  font-size:.85rem;
+  font-weight:700;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.admin-input{
+  width:100%;
+  padding: 12px 14px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  outline: none;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.admin-input:focus{
+  border-color: var(--accent-start);
+  box-shadow: 0 0 0 4px var(--accent-lighter);
+}
+
+/* Tabla premium */
+.table-wrap{
+  overflow:auto;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.admin-table{
+  width:100%;
+  border-collapse: collapse;
+  min-width: 820px;
+  background: var(--bg-card);
+}
+
+.admin-table th{
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  text-align:left;
+  font-size:.8rem;
+  color: var(--text-muted);
+  font-weight:800;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.admin-table td{
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.admin-table tr:hover td{
+  background: rgba(99,102,241,.06);
+}
+
+.actions{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Activity feed */
+.activity-feed{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+}
+
+.activity-item{
+  display:flex;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,.65);
+}
+
+.activity-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  margin-top: 6px;
+  background: var(--accent-start);
+  box-shadow: 0 0 0 6px var(--accent-lighter);
+  flex-shrink:0;
+}
+
+.activity-main{
+  min-width:0;
+  flex:1;
+}
+
+.activity-title{
+  font-weight:800;
+  color: var(--text-primary);
+  font-size: .92rem;
+  margin-bottom: 2px;
+}
+
+.activity-desc{
+  color: var(--text-secondary);
+  font-size: .85rem;
+  line-height: 1.35;
+}
+
+.activity-meta{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--text-muted);
+  font-size: .78rem;
+  margin-top: 6px;
+}
+
+/* Estado del sistema */
+.system-list{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+}
+
+.system-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 10px 12px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,.65);
+}
+
+.system-left{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.system-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background: #10b981;
+  box-shadow: 0 0 0 6px rgba(16,185,129,.15);
+}
+
+.system-dot.warn{
+  background:#f59e0b;
+  box-shadow: 0 0 0 6px rgba(245,158,11,.15);
+}
+.system-dot.bad{
+  background:#ef4444;
+  box-shadow: 0 0 0 6px rgba(239,68,68,.15);
+}
+
+/* Toast */
+.toast{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 340px;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,.92);
+  box-shadow: var(--shadow-lg);
+  padding: 12px 14px;
+  z-index: 9999;
+  transform: translateY(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.toast.show{
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toast-title{
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.toast-msg{
+  color: var(--text-secondary);
+  font-size: .9rem;
+}
+
+/* Modal */
+.modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 9998;
+}
+
+.modal{
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  width: min(720px, 92vw);
+  z-index: 9999;
+}

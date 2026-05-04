@@ -1,114 +1,349 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Admin - Secretaría Virtual</title>
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/botones.css">
-  <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/sidebar.css">
-  <link rel="stylesheet" href="css/header.css">
-  <link rel="stylesheet" href="css/cards.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Secretaría Virtual</title>
+
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/botones.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/cards.css">
+
+    <!-- BOOM Admin -->
+    <link rel="stylesheet" href="css/panel-admin.css">
 </head>
+
 <body data-rol="admin">
 
-  <!-- ==================== SIDEBAR ==================== -->
-  <aside id="sidebar" class="sidebar">
+<!-- ==================== SIDEBAR ==================== -->
+<aside id="sidebar" class="sidebar">
     <div class="sidebar-brand">
-      <div class="sidebar-brand-icon">🎓</div>
-      <div class="sidebar-brand-text">Secretaría Virtual</div>
+        <div class="sidebar-brand-icon">🎓</div>
+        <div class="sidebar-brand-text">Secretaría Virtual</div>
     </div>
 
     <nav id="sidebarNav" class="sidebar-nav">
-      <!-- Se llena dinámicamente con Sidebar.init() -->
+        <!-- Se llena dinámicamente con Sidebar.init() -->
     </nav>
 
     <div id="sidebarUser" class="sidebar-user">
-      <!-- Se llena dinámicamente con Sidebar.init() -->
+        <!-- Se llena dinámicamente con Sidebar.init() -->
     </div>
-  </aside>
+</aside>
 
-  <!-- Overlay para móvil -->
-  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+<!-- Overlay para móvil -->
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-  <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
-  <div class="main-content">
+<!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+<div class="main-content">
 
     <!-- ==================== HEADER ==================== -->
     <header class="header">
-      <button id="toggleSidebar" class="header-toggle">☰</button>
+        <button id="toggleSidebar" class="header-toggle">☰</button>
 
-      <div class="header-search">
-        <svg class="header-search-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-        </svg>
-        <input type="text" id="searchInput" placeholder="Buscar...">
-        <kbd class="header-search-shortcut">⌘K</kbd>
-      </div>
-
-      <div class="header-actions">
-        <button id="notificationsBtn" class="header-action-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
-          </svg>
-          <span class="notification-count">0</span>
-        </button>
-
-        <div id="headerUser" class="header-user">
-          <!-- Se llena dinámicamente con Header.init() -->
+        <div class="header-search">
+            <svg class="header-search-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Buscar...">
+            <kbd class="header-search-shortcut">⌘K</kbd>
         </div>
-      </div>
+
+        <div class="header-actions">
+            <button id="notificationsBtn" class="header-action-btn">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+                </svg>
+                <span class="notification-count">0</span>
+            </button>
+
+            <div id="headerUser" class="header-user">
+                <!-- Se llena dinámicamente con Header.init() -->
+            </div>
+        </div>
     </header>
 
     <!-- ==================== CONTENIDO ==================== -->
     <div class="content-wrapper">
 
-      <!-- Hero Section -->
-      <div class="hero-section">
-        <div class="hero-content">
-          <h1 class="hero-title">
-            ⚙️ Panel de Administración
-          </h1>
-          <p class="hero-subtitle">
-            Esta sección está en construcción. Aquí podrás gestionar el sistema completo, usuarios, permisos, configuración y más.
-          </p>
-        </div>
-      </div>
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">⚙️ Panel de Administración</h1>
+                <p class="hero-subtitle">
+                    Centro de mando del sistema: usuarios, catálogos, auditoría y estado general.
+                </p>
 
-      <!-- Placeholder Content -->
-      <div class="section">
-        <div class="section-header">
-          <div>
-            <h2 class="section-title">Próximamente</h2>
-            <p class="section-subtitle">Dashboard completo con todas las funcionalidades</p>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-body">
-            <div class="flex-center" style="flex-direction: column; gap: 24px; padding: 48px 24px;">
-              <div class="spinner"></div>
-              <p class="text-secondary">Página en construcción</p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="#dashboard">📊 Ver resumen</a>
+                    <a class="btn btn-secondary" href="#catalogos">🧩 Ir a catálogos</a>
+                    <a class="btn btn-secondary" href="#auditoria">🧾 Auditoría</a>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
+
+        <!-- ==================== DASHBOARD ==================== -->
+        <div class="section" id="dashboard">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Resumen</h2>
+                    <p class="section-subtitle">KPIs del sistema (Admin)</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btnRefreshAdmin">🔄 Refrescar</button>
+            </div>
+
+            <div class="stats-grid" id="adminStatsGrid">
+                <!-- JS: /dashboard/admin -->
+            </div>
+        </div>
+
+        <!-- ==================== ACCESOS RÁPIDOS ==================== -->
+        <div class="section" id="quick">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Accesos rápidos</h2>
+                    <p class="section-subtitle">Acciones principales del panel</p>
+                </div>
+            </div>
+
+            <div class="grid-cards grid-cards-4" id="adminQuickGrid">
+                <!-- JS -->
+            </div>
+        </div>
+
+        <!-- ==================== CATÁLOGOS + LATERAL ==================== -->
+        <div class="section" id="catalogos">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Catálogos (CRUD)</h2>
+                    <p class="section-subtitle">Vista CRUD obligatoria del proyecto</p>
+                </div>
+            </div>
+
+            <div class="layout-with-sidebar">
+                <div class="layout-main">
+
+                    <!-- CRUD CICLOS -->
+                    <div class="card no-hover" id="ciclosCard">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon">🧩</span>
+                                Gestión de Ciclos
+                            </div>
+                            <span class="badge badge-accent">CRUD</span>
+                        </div>
+
+                        <div class="admin-toolbar">
+                            <div class="admin-hint text-secondary" id="ciclosMsg">Listo.</div>
+                        </div>
+
+                        <form id="formCiclo" class="admin-form">
+                            <div class="admin-field">
+                                <label>Nombre *</label>
+                                <input id="cicloNombre" class="admin-input" placeholder="Desarrollo de Aplicaciones Web" required>
+                            </div>
+
+                            <div class="admin-field">
+                                <label>Código</label>
+                                <input id="cicloCodigo" class="admin-input" placeholder="DAW">
+                            </div>
+
+                            <div class="admin-field">
+                                <label>Familia</label>
+                                <input id="cicloFamilia" class="admin-input" placeholder="Informática y Comunicaciones">
+                            </div>
+
+                            <div class="admin-field">
+                                <label>Grado</label>
+                                <input id="cicloGrado" class="admin-input" placeholder="Grado Superior">
+                            </div>
+
+                            <button class="btn btn-primary" type="submit">➕ Crear</button>
+                        </form>
+
+                        <div style="height:14px"></div>
+
+                        <div class="table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                <tr>
+                                    <th style="width:70px">ID</th>
+                                    <th>Nombre</th>
+                                    <th style="width:110px">Código</th>
+                                    <th style="width:140px">Estado</th>
+                                    <th style="width:260px">Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody id="ciclosTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- USUARIOS (placeholder BOOM para la próxima fase) -->
+                    <div class="card no-hover" id="usuarios">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon">👥</span>
+                                Usuarios (próxima fase)
+                            </div>
+                            <span class="badge badge-info">BOOM en demo</span>
+                        </div>
+                        <div class="card-body">
+                            Aquí irá el listado de usuarios + cambiar rol (USUARIO → ALUMNO) y gestión avanzada.
+                        </div>
+                    </div>
+
+                    <!-- PERMISOS (placeholder) -->
+                    <div class="card no-hover" id="permisos">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon">🔐</span>
+                                Permisos (próxima fase)
+                            </div>
+                            <span class="badge badge-warning">Seguridad</span>
+                        </div>
+                        <div class="card-body">
+                            Vista de roles y permisos por endpoints. (Más adelante: matriz de permisos y auditoría de cambios).
+                        </div>
+                    </div>
+
+                    <!-- CONFIGURACIÓN (placeholder) -->
+                    <div class="card no-hover" id="configuracion">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon">⚙️</span>
+                                Configuración (próxima fase)
+                            </div>
+                            <span class="badge badge-warning">Sistema</span>
+                        </div>
+                        <div class="card-body">
+                            Ajustes del centro, horarios, tipos de trámite, etc.
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="layout-aside">
+
+                    <!-- ACTIVIDAD -->
+                    <div class="card no-hover" id="auditoria">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon">🧾</span>
+                                Actividad reciente
+                            </div>
+                            <span class="badge badge-warning">Auditoría</span>
+                        </div>
+                        <div class="activity-feed" id="adminActivityFeed">
+                            <!-- JS -->
+                        </div>
+                    </div>
+
+                    <!-- ESTADO DEL SISTEMA -->
+                    <div class="card no-hover" id="sistema">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon">🟢</span>
+                                Estado del sistema
+                            </div>
+                            <span class="badge badge-success" id="estadoGeneralBadge">OK</span>
+                        </div>
+
+                        <div class="system-list">
+                            <div class="system-item">
+                                <div class="system-left">
+                                    <span class="system-dot" id="dotBackend"></span>
+                                    <strong>Backend</strong>
+                                </div>
+                                <span class="text-secondary" id="txtBackend">Conectado</span>
+                            </div>
+
+                            <div class="system-item">
+                                <div class="system-left">
+                                    <span class="system-dot warn" id="dotDB"></span>
+                                    <strong>Base de datos</strong>
+                                </div>
+                                <span class="text-secondary" id="txtDB">Verificando...</span>
+                            </div>
+
+                            <div class="system-item">
+                                <div class="system-left">
+                                    <span class="system-dot warn" id="dotClima"></span>
+                                    <strong>Clima</strong>
+                                </div>
+                                <span class="text-secondary" id="txtClima">Verificando...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- TOAST -->
+        <div class="toast" id="toast">
+            <div class="toast-title" id="toastTitle"></div>
+            <div class="toast-msg" id="toastMsg"></div>
+        </div>
+
+        <!-- MODAL EDITAR CICLO -->
+        <div class="modal-overlay hidden" id="modalOverlay"></div>
+        <div class="modal hidden" id="modalCiclo">
+            <div class="card no-hover">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="card-title-icon">✏️</span>
+                        Editar ciclo
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btnCerrarModal">✖</button>
+                </div>
+
+                <form id="formEditarCiclo" class="admin-form" style="grid-template-columns: 1.3fr .6fr 1fr .6fr auto;">
+                    <div class="admin-field">
+                        <label>Nombre *</label>
+                        <input id="editNombre" class="admin-input" required>
+                    </div>
+
+                    <div class="admin-field">
+                        <label>Código</label>
+                        <input id="editCodigo" class="admin-input">
+                    </div>
+
+                    <div class="admin-field">
+                        <label>Familia</label>
+                        <input id="editFamilia" class="admin-input">
+                    </div>
+
+                    <div class="admin-field">
+                        <label>Grado</label>
+                        <input id="editGrado" class="admin-input">
+                    </div>
+
+                    <button class="btn btn-primary" type="submit">💾 Guardar</button>
+                </form>
+            </div>
+        </div>
 
     </div>
-  </div>
+</div>
 
-  <!-- ==================== SCRIPTS ==================== -->
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/components/sidebar.js"></script>
-  <script src="js/components/header.js"></script>
-  <script src="js/components/asistente.js"></script>
+<!-- ==================== SCRIPTS ==================== -->
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/components/sidebar.js"></script>
+<script src="js/components/header.js"></script>
+<script src="js/components/asistente.js"></script>
 
-  <script>
+<!-- JS del panel admin (BOOM + CRUD) -->
+<script src="js/pages/panel-admin.js"></script>
+
+<script>
     // Verificar autenticación
     if (!Auth.requireAuth()) {
       // Ya redirige automáticamente
@@ -120,6 +355,7 @@
       const menuItems = [
         { icon: '🏠', label: 'Inicio', href: 'panel-admin.html', active: true },
         { icon: '📊', label: 'Dashboard', href: '#dashboard' },
+        { icon: '🧩', label: 'Catálogos', href: '#catalogos' },
         { icon: '👥', label: 'Usuarios', href: '#usuarios' },
         { icon: '🔐', label: 'Permisos', href: '#permisos' },
         { icon: '📋', label: 'Auditoría', href: '#auditoria' },
@@ -131,8 +367,11 @@
 
       // Inicializar Header
       Header.init(userData, 0);
+
+      // Inicializar Panel Admin (KPIs + CRUD + actividad)
+      PanelAdmin.init();
     }
-  </script>
+</script>
 
 </body>
 </html>
