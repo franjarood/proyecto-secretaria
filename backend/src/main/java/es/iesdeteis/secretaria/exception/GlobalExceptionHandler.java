@@ -539,4 +539,60 @@ public class GlobalExceptionHandler {
         return error;
     }
 
+    // Curso no encontrado
+    @ExceptionHandler(CursoNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleCursoNoEncontrado(CursoNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Curso no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // Ciclo no encontrado
+    @ExceptionHandler(CicloNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleCicloNoEncontrado(CicloNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Ciclo no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // TipoMatricula no encontrado
+    @ExceptionHandler(TipoMatriculaNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleTipoMatriculaNoEncontrado(TipoMatriculaNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Tipo de matrícula no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
+    // DocumentoRequerido no encontrado
+    @ExceptionHandler(DocumentoRequeridoNoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, Object> handleDocumentoRequeridoNoEncontrado(DocumentoRequeridoNoEncontradoException ex) {
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.NOT_FOUND.value());
+        error.put("error", "Documento requerido no encontrado");
+        error.put("mensaje", ex.getMessage());
+
+        return error;
+    }
+
 }

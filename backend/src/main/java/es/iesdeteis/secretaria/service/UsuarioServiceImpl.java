@@ -3,6 +3,7 @@ package es.iesdeteis.secretaria.service;
 import es.iesdeteis.secretaria.dto.UsuarioActualDTO;
 import es.iesdeteis.secretaria.exception.UsuarioDuplicadoException;
 import es.iesdeteis.secretaria.exception.UsuarioNoEncontradoException;
+import es.iesdeteis.secretaria.model.RolUsuario;
 import es.iesdeteis.secretaria.model.TipoNotificacion;
 import es.iesdeteis.secretaria.model.Usuario;
 import es.iesdeteis.secretaria.repository.UsuarioRepository;
@@ -116,6 +117,24 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuarioRepository.deleteById(id);
     }
+
+
+    @Override
+    public Usuario cambiarRol(Long id, RolUsuario nuevoRol) {
+
+        if (nuevoRol == null) {
+            throw new IllegalArgumentException("El rol no puede ser nulo");
+        }
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado"));
+
+        usuario.setRol(nuevoRol);
+
+        return usuarioRepository.save(usuario);
+    }
+
+
 
     @Override
     public UsuarioActualDTO obtenerUsuarioActual() {

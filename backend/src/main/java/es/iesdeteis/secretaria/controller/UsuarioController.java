@@ -1,5 +1,6 @@
 package es.iesdeteis.secretaria.controller;
 
+import es.iesdeteis.secretaria.dto.CambiarRolRequestDTO;
 import es.iesdeteis.secretaria.dto.UsuarioActualDTO;
 import es.iesdeteis.secretaria.dto.UsuarioResponseDTO;
 import es.iesdeteis.secretaria.exception.UsuarioNoEncontradoException;
@@ -71,6 +72,15 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     public void deleteUsuario(@PathVariable Long id) {
         usuarioService.deleteById(id);
+    }
+
+
+    // Cambiar rol de usuario (endpoint específico para admin)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/cambiar-rol")
+    public UsuarioResponseDTO cambiarRol(@PathVariable Long id, @Valid @RequestBody CambiarRolRequestDTO request) {
+        Usuario usuarioActualizado = usuarioService.cambiarRol(id, request.getRol());
+        return convertirAResponseDTO(usuarioActualizado);
     }
 
 
