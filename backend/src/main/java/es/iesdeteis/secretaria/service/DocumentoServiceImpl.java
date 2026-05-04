@@ -362,8 +362,10 @@ public class DocumentoServiceImpl implements DocumentoService {
             Turno turno = turnoRepository.findById(turnoId)
                     .orElseThrow(() -> new TurnoNoEncontradoException("Turno no encontrado"));
 
-            if (turno.getUsuario() == null ||
-                    !turno.getUsuario().getId().equals(usuarioActual.getId())) {
+            ReservaTurno reserva = turno.getReservaTurno();
+            Usuario propietario = (reserva != null) ? reserva.getUsuario() : null;
+
+            if (propietario == null || !propietario.getId().equals(usuarioActual.getId())) {
                 throw new DocumentoNoPerteneceUsuarioException(
                         "No tienes permiso para acceder a los documentos de este turno"
                 );
