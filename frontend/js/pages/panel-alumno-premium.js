@@ -13,7 +13,9 @@ const PanelAlumnoPremium = {
   usuarioId: null,
   dashboardData: null,
   climaData: null,
-  ubicacionCentro: { lat: 42.2406, lng: -8.7207 },
+  ubicacionCentro: (APP_CONFIG.GOOGLE_MAPS && APP_CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO)
+    ? APP_CONFIG.GOOGLE_MAPS.CENTRO_EDUCATIVO
+    : { lat: 42.25222480662193, lng: -8.690217970641129, nombre: 'Centro educativo' },
   ubicacionUsuario: null,
 
   // ==================== INICIALIZACIÓN ====================
@@ -424,6 +426,95 @@ const PanelAlumnoPremium = {
 
   // ==================== UBICACIÓN Y CHECK-IN ====================
 
+  getRadioCheckinMetros() {
+    return (APP_CONFIG.GOOGLE_MAPS && APP_CONFIG.GOOGLE_MAPS.RADIO_CHECKIN_METROS)
+      ? Number(APP_CONFIG.GOOGLE_MAPS.RADIO_CHECKIN_METROS)
+      : 500;
+  },
+
+  getModoRutaSeleccionado() {
+    const select = document.getElementById('select-modo-ruta');
+    const modo = (select && select.value) ? String(select.value) : 'WALKING';
+    if (modo === 'DRIVING' || modo === 'TRANSIT' || modo === 'WALKING') {
+      return modo;
+    }
+    return 'WALKING';
+  },
+
+  travelModeToGoogle(modo) {
+    if (typeof google === 'undefined' || !google.maps || !google.maps.TravelMode) {
+      return null;
+    }
+
+    switch (modo) {
+      case 'DRIVING':
+        return google.maps.TravelMode.DRIVING;
+      case 'TRANSIT':
+        return google.maps.TravelMode.TRANSIT;
+      case 'WALKING':
+      default:
+        return google.maps.TravelMode.WALKING;
+    }
+  },
+
+  travelModeToUrl(modo) {
+    switch (modo) {
+      case 'DRIVING':
+        return 'driving';
+      case 'TRANSIT':
+        return 'transit';
+      case 'WALKING':
+      default:
+        return 'walking';
+    }
+  },
+
+  construirUrlGoogleMapsRuta(modo) {
+    if (!this.ubicacionUsuario) return null;
+
+    const origin = `${this.ubicacionUsuario.lat},${this.ubicacionUsuario.lng}`;
+    const destination = `${this.ubicacionCentro.lat},${this.ubicacionCentro.lng}`;
+    const travelmode = this.travelModeToUrl(modo);
+
+    return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=${encodeURIComponent(travelmode)}`;
+  },
+
+  mostrarToast(mensaje, tipo = 'info') {
+    const duration = (APP_CONFIG.UI && APP_CONFIG.UI.TOAST_DURATION) ? APP_CONFIG.UI.TOAST_DURATION : 5000;
+
+    const toast = document.createElement('div');
+    toast.setAttribute('role', 'status');
+    toast.style.position = 'fixed';
+    toast.style.right = '18px';
+    toast.style.bottom = '18px';
+    toast.style.zIndex = '9999';
+    toast.style.maxWidth = '420px';
+    toast.style.padding = '12px 14px';
+    toast.style.borderRadius = '14px';
+    toast.style.fontFamily = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+    toast.style.fontSize = '13px';
+    toast.style.fontWeight = '700';
+    toast.style.backdropFilter = 'blur(12px)';
+    toast.style.boxShadow = '0 16px 40px rgba(0,0,0,.18)';
+    toast.style.border = '1px solid rgba(255,255,255,.35)';
+
+    const bg = tipo === 'error'
+      ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.90), rgba(249, 115, 22, 0.82))'
+      : 'linear-gradient(135deg, rgba(59, 130, 246, 0.86), rgba(139, 92, 246, 0.78))';
+
+    toast.style.background = bg;
+    toast.style.color = 'white';
+    toast.textContent = mensaje;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.transition = 'opacity 240ms ease';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 260);
+    }, duration);
+  },
+
   extraerIdTurnoParaCheckin(obj) {
     if (!obj) return null;
 
@@ -491,7 +582,8 @@ const PanelAlumnoPremium = {
       );
 
       if (distanciaElement) {
-        const dentroRadio = distancia < 500;
+        const radio = this.getRadioCheckinMetros();
+        const dentroRadio = distancia < radio;
         distanciaElement.innerHTML = `
           <div style="padding: 16px; border-radius: 14px; background: linear-gradient(135deg, ${dentroRadio ? 'rgba(16, 185, 129, 0.12)' : 'rgba(251, 146, 60, 0.12)'}, ${dentroRadio ? 'rgba(5, 150, 105, 0.12)' : 'rgba(249, 115, 22, 0.12)'}); border: 1px solid ${dentroRadio ? 'rgba(16, 185, 129, 0.3)' : 'rgba(251, 146, 60, 0.3)'};">
             <div style="display: flex; gap: 12px; align-items: center;">
@@ -501,7 +593,7 @@ const PanelAlumnoPremium = {
                   ${distancia >= 1000 ? (distancia / 1000).toFixed(1) + ' km' : Math.round(distancia) + ' m'} del centro
                 </strong>
                 <span style="font-size: 0.875rem; color: #4b5563;">
-                  ${dentroRadio ? '✓ Estás cerca, puedes hacer check-in' : '⚠ Acércate más para hacer check-in (radio: 500m)'}
+                  ${dentroRadio ? '✓ Estás cerca, puedes hacer check-in' : `⚠ Acércate más para hacer check-in (radio: ${Math.round(radio)}m)`}
                 </span>
               </div>
             </div>
@@ -650,6 +742,19 @@ const PanelAlumnoPremium = {
       console.log('✓ btn-checkin');
     }
 
+    // Controles de ruta
+    const btnIniciarRuta = document.getElementById('btn-iniciar-ruta');
+    if (btnIniciarRuta) {
+      btnIniciarRuta.addEventListener('click', async () => this.handleIniciarRuta());
+      console.log('✓ btn-iniciar-ruta');
+    }
+
+    const btnAbrirGoogleMaps = document.getElementById('btn-abrir-google-maps');
+    if (btnAbrirGoogleMaps) {
+      btnAbrirGoogleMaps.addEventListener('click', async () => this.handleAbrirEnGoogleMaps());
+      console.log('✓ btn-abrir-google-maps');
+    }
+
     // Botón logout
     const btnLogout = document.getElementById('btn-logout');
     if (btnLogout) {
@@ -715,6 +820,56 @@ const PanelAlumnoPremium = {
 
     if (!turnoId) {
       alert('ℹ️ Ubicación obtenida. No tienes ningún turno próximo para hacer check-in.');
+    }
+  },
+
+  async handleIniciarRuta() {
+    // 1) Ubicación del alumno
+    if (!this.ubicacionUsuario) {
+      const ubic = await this.obtenerUbicacion();
+      if (!ubic) {
+        return;
+      }
+    }
+
+    const modo = this.getModoRutaSeleccionado();
+    const url = this.construirUrlGoogleMapsRuta(modo);
+
+    // 2) Si Google Maps está cargado, intentamos pintar ruta dentro del mapa
+    if (window.MapaCentro && typeof MapaCentro.estaDisponible === 'function' && MapaCentro.estaDisponible()) {
+      const travelModeGoogle = this.travelModeToGoogle(modo);
+
+      if (travelModeGoogle && typeof MapaCentro.trazarRutaDesdeAlumno === 'function') {
+        const res = await MapaCentro.trazarRutaDesdeAlumno(travelModeGoogle);
+
+        if (res && res.ok) {
+          return;
+        }
+
+        if (modo === 'TRANSIT') {
+          this.mostrarToast('No se pudo calcular ruta en transporte público. Prueba a pie o en coche.', 'error');
+        }
+      }
+    }
+
+    // 3) Fallback: abrir Google Maps con la ruta
+    if (url) {
+      window.open(url, '_blank', 'noopener');
+    }
+  },
+
+  async handleAbrirEnGoogleMaps() {
+    if (!this.ubicacionUsuario) {
+      const ubic = await this.obtenerUbicacion();
+      if (!ubic) {
+        return;
+      }
+    }
+
+    const modo = this.getModoRutaSeleccionado();
+    const url = this.construirUrlGoogleMapsRuta(modo);
+    if (url) {
+      window.open(url, '_blank', 'noopener');
     }
   },
 
@@ -801,7 +956,7 @@ const PanelAlumnoPremium = {
 
     console.log('📦 [Google Maps] Cargando script...');
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMapsCallback`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initGoogleMapsCallback`;
     script.async = true;
     script.defer = true;
 

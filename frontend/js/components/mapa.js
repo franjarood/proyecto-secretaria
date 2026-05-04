@@ -164,7 +164,7 @@ const MapaCentro = {
     this.mapa.fitBounds(bounds);
 
     // Calcular y mostrar ruta
-    this.mostrarRuta(lat, lng);
+        this.mostrarRuta(lat, lng, google.maps.TravelMode.WALKING);
   },
 
   /**
@@ -172,10 +172,10 @@ const MapaCentro = {
    * @param {number} lat - Latitud del alumno
    * @param {number} lng - Longitud del alumno
    */
-  mostrarRuta(lat, lng) {
+  async mostrarRuta(lat, lng, travelMode = google.maps.TravelMode.WALKING) {
     if (!this.directionsService || !this.directionsRenderer) {
       console.warn('Servicios de direcciones no disponibles');
-      return;
+      return { ok: false, status: 'NO_SERVICE' };
     }
 
     const origen = { lat, lng };
@@ -187,17 +187,33 @@ const MapaCentro = {
     const request = {
       origin: origen,
       destination: destino,
-      travelMode: google.maps.TravelMode.WALKING
+      travelMode
     };
 
-    this.directionsService.route(request, (result, status) => {
-      if (status === google.maps.DirectionsStatus.OK) {
-        this.directionsRenderer.setDirections(result);
-        console.log('Ruta calculada correctamente');
-      } else {
-        console.warn('No se pudo calcular la ruta:', status);
-      }
+    return await new Promise((resolve) => {
+      this.directionsService.route(request, (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          this.directionsRenderer.setDirections(result);
+          console.log('Ruta calculada correctamente');
+          resolve({ ok: true, status });
+        } else {
+          console.warn('No se pudo calcular la ruta:', status);
+          resolve({ ok: false, status });
+        }
+      });
     });
+  },
+
+  /**
+   * Traza una ruta desde la ubicación del alumno (ya conocida) hasta el centro con un modo concreto.
+   * Devuelve {ok,status}.
+   */
+  async trazarRutaDesdeAlumno(travelMode) {
+    if (!this.ubicacionAlumno) {
+      return { ok: false, status: 'NO_ORIGIN' };
+    }
+
+    return await this.mostrarRuta(this.ubicacionAlumno.lat, this.ubicacionAlumno.lng, travelMode);
   },
 
   /**

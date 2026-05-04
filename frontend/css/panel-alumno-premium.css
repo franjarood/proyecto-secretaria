@@ -963,6 +963,58 @@ button {
     background: rgba(255, 255, 255, 0.1);
 }
 
+/* Controles de ruta (Cómo llegar) - bloque pequeño dentro de la tarjeta del mapa */
+.route-controls {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.route-mode {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.route-mode label {
+    font-size: 12px;
+    font-weight: 800;
+    color: #dfe9ff;
+    opacity: 0.95;
+}
+
+.route-select {
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.12);
+    color: #eaf2ff;
+    padding: 8px 10px;
+    font-weight: 700;
+    font-size: 12.5px;
+    outline: none;
+}
+
+.route-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.route-buttons .btn-glass,
+.route-buttons .soft-btn {
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    font-weight: 800;
+}
+
 .event-item {
     display: grid;
     grid-template-columns: 56px 1fr auto;

@@ -438,6 +438,23 @@
                         📍 Usa tu ubicación para calcular la distancia al centro.
                     </div>
 
+                    <!-- CONTROLES DE RUTA (origen: ubicación actual | destino: centro educativo) -->
+                    <div class="route-controls" aria-label="Cómo llegar al centro">
+                        <div class="route-mode">
+                            <label for="select-modo-ruta">Cómo llegar</label>
+                            <select id="select-modo-ruta" class="route-select">
+                                <option value="WALKING">A pie</option>
+                                <option value="DRIVING">Coche</option>
+                                <option value="TRANSIT">Transporte público</option>
+                            </select>
+                        </div>
+
+                        <div class="route-buttons">
+                            <button type="button" class="btn-glass" id="btn-iniciar-ruta">🧭 Iniciar ruta</button>
+                            <button type="button" class="soft-btn" id="btn-abrir-google-maps">↗ Abrir en Google Maps</button>
+                        </div>
+                    </div>
+
                     <button type="button" class="btn-gradient full" id="btn-checkin">
                         Activa tu ubicación primero
                     </button>

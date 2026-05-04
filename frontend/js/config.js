@@ -51,8 +51,8 @@ const CONFIG = {
   GOOGLE_MAPS: {
     API_KEY: '',
     CENTRO_EDUCATIVO: {
-      lat: 42.2406,
-      lng: -8.7207,
+      lat: 42.25222480662193,
+      lng: -8.690217970641129,
       nombre: 'IES de Teis - Vigo'
     },
     RADIO_CHECKIN_METROS: 500
