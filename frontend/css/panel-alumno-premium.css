@@ -1083,7 +1083,9 @@ button {
 /* Responsive mejorado para accesos rápidos */
 @media (max-width: 1500px) {
     .quick-access-row {
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
         gap: 14px;
     }
 }
@@ -1104,7 +1106,9 @@ button {
     }
 
     .quick-access-row {
-        grid-template-columns: repeat(4, 1fr);
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
     }
 }
 
@@ -1131,7 +1135,9 @@ button {
     }
 
     .quick-access-row {
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
     }
 
     .hero-premium::after {

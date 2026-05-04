@@ -111,18 +111,25 @@ const PanelAlumnoPremium = {
   },
 
   async cargarClima() {
-    console.log('🌤️ Cargando clima...');
+    console.log('🌤️ [Clima] Llamando a GET /clima/actual...');
     try {
       const data = window.API
         ? await API.get('/clima/actual')
         : await this.fetchWithAuth(`${this.API_BASE}/clima/actual`);
 
       this.climaData = data;
-      console.log('✓ Clima cargado:', data);
+      console.log('✅ [Clima] Respuesta recibida:', data);
+
+      if (data && data.climaDisponible) {
+        console.log('✓ [Clima] Disponible -', data.temperatura + '°C', data.descripcion);
+      } else {
+        console.warn('⚠️ [Clima] No disponible - usando fallback');
+      }
+
       this.renderClima(data);
 
     } catch (error) {
-      console.error('⚠️ Error al cargar clima:', error);
+      console.error('❌ [Clima] Error HTTP:', error.message || error);
       this.renderClimaFallback();
     }
   },
@@ -216,7 +223,7 @@ const PanelAlumnoPremium = {
     const temperaturaEl = document.getElementById('weather-temp') || document.getElementById('clima-temperatura');
     const descripcionEl = document.getElementById('weather-desc') || document.getElementById('clima-descripcion');
 
-    if (clima && clima.climaDisponible && clima.temperatura) {
+    if (clima && clima.climaDisponible && clima.temperatura !== null && clima.temperatura !== undefined) {
       if (iconoEl) iconoEl.textContent = clima.icono || '🌤️';
       if (temperaturaEl) temperaturaEl.textContent = `${Math.round(clima.temperatura)}°C`;
       if (descripcionEl) descripcionEl.textContent = clima.descripcion || 'Clima actual';
@@ -240,6 +247,7 @@ const PanelAlumnoPremium = {
     if (!container) return;
 
     const turno = data.proximoTurno || data.proximaReserva;
+    const turnoIdParaCheckin = this.extraerIdTurnoParaCheckin(turno);
 
     if (turno) {
       container.innerHTML = `
@@ -255,7 +263,7 @@ const PanelAlumnoPremium = {
             📅 ${turno.fechaCita ? this.formatDateTime(turno.fechaCita) : 'Fecha pendiente'}
           </p>
           <button class="btn-gradient" style="width: 100%; margin-top: 10px; padding: 12px;"
-                  onclick="PanelAlumnoPremium.handleCheckIn(${turno.id || turno.turnoId || turno.idTurno})">
+                  onclick="PanelAlumnoPremium.handleCheckIn(${turnoIdParaCheckin !== null ? turnoIdParaCheckin : 'null'})">
             📍 Hacer check-in
           </button>
         </div>
@@ -416,10 +424,40 @@ const PanelAlumnoPremium = {
 
   // ==================== UBICACIÓN Y CHECK-IN ====================
 
+  extraerIdTurnoParaCheckin(obj) {
+    if (!obj) return null;
+
+    // Prioridad: campos explícitos de turno
+    const candidato = obj.turnoId ?? obj.idTurno;
+    if (candidato !== null && candidato !== undefined) {
+      const num = Number(candidato);
+      return Number.isFinite(num) ? num : null;
+    }
+
+    // Solo usar `id` si el objeto parece un Turno (evitar confundir con idReserva)
+    const pareceTurno = obj.numeroTurno !== undefined
+      || obj.estadoTurno !== undefined
+      || obj.horaCita !== undefined
+      || obj.horaLlegada !== undefined;
+
+    if (pareceTurno && obj.id !== null && obj.id !== undefined) {
+      const num = Number(obj.id);
+      return Number.isFinite(num) ? num : null;
+    }
+
+    return null;
+  },
+
+  obtenerProximoTurnoId() {
+    const d = this.dashboardData || {};
+    return this.extraerIdTurnoParaCheckin(d.proximoTurno)
+      ?? this.extraerIdTurnoParaCheckin(d.proximaReserva);
+  },
+
   async obtenerUbicacion() {
     if (!navigator.geolocation) {
       alert('❌ Tu navegador no soporta geolocalización');
-      return;
+      return null;
     }
 
     const btnUbi = document.getElementById('btn-usar-ubicacion');
@@ -441,7 +479,8 @@ const PanelAlumnoPremium = {
 
       this.ubicacionUsuario = {
         lat: position.coords.latitude,
-        lng: position.coords.longitude
+        lng: position.coords.longitude,
+        precisionMetros: position.coords.accuracy ? Math.round(position.coords.accuracy) : null
       };
 
       const distancia = this.calcularDistancia(
@@ -475,6 +514,13 @@ const PanelAlumnoPremium = {
         MapaCentro.actualizarUbicacionAlumno(position.coords.latitude, position.coords.longitude, distancia);
       }
 
+      const btnCheckin = document.getElementById('btn-checkin');
+      if (btnCheckin) {
+        btnCheckin.textContent = '📍 Hacer check-in';
+      }
+
+      return this.ubicacionUsuario;
+
     } catch (error) {
       console.error('❌ Error obteniendo ubicación:', error);
       if (distanciaElement) {
@@ -484,6 +530,8 @@ const PanelAlumnoPremium = {
           </p>
         `;
       }
+
+      return null;
     } finally {
       if (btnUbi) {
         btnUbi.disabled = false;
@@ -493,44 +541,43 @@ const PanelAlumnoPremium = {
   },
 
   async handleCheckIn(turnoId) {
-    if (!navigator.geolocation) {
-      alert('❌ Tu navegador no soporta geolocalización');
-      return;
-    }
-
     if (!turnoId) {
       alert('⚠️ No hay ningún turno activo para hacer check-in');
       return;
     }
 
-    const btn = document.querySelector('button[onclick*="handleCheckIn"]');
+    const btnMapa = document.getElementById('btn-checkin');
+    const btnInline = document.querySelector('button[onclick*="handleCheckIn"]');
+    const btn = btnMapa || btnInline;
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '⏳ Ubicando...';
+      btn.innerHTML = '⏳ Preparando...';
     }
 
     try {
-      const position = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        });
-      });
+      if (!this.ubicacionUsuario) {
+        const ubic = await this.obtenerUbicacion();
+        if (!ubic) {
+          throw new Error('No se pudo obtener la ubicación');
+        }
+      }
 
       if (btn) {
         btn.innerHTML = '⏳ Registrando...';
       }
 
+      const payload = {
+        latitud: this.ubicacionUsuario.lat,
+        longitud: this.ubicacionUsuario.lng
+      };
+
+      if (this.ubicacionUsuario.precisionMetros !== null && this.ubicacionUsuario.precisionMetros !== undefined) {
+        payload.precisionMetros = this.ubicacionUsuario.precisionMetros;
+      }
+
       const response = window.API
-        ? await API.post(`/turnos/${turnoId}/checkin-geo`, {
-            latitud: position.coords.latitude,
-            longitud: position.coords.longitude
-          })
-        : await this.postWithAuth(`${this.API_BASE}/turnos/${turnoId}/checkin-geo`, {
-            latitud: position.coords.latitude,
-            longitud: position.coords.longitude
-          });
+        ? await API.post(`/turnos/${turnoId}/checkin-geo`, payload)
+        : await this.postWithAuth(`${this.API_BASE}/turnos/${turnoId}/checkin-geo`, payload);
 
       alert(`✅ Check-in realizado correctamente\n\nDistancia: ${response.distanciaMetros || '?'}m`);
       await this.cargarDashboard();
@@ -588,7 +635,18 @@ const PanelAlumnoPremium = {
 
     const btnCheckin = document.getElementById('btn-checkin');
     if (btnCheckin) {
-      btnCheckin.addEventListener('click', () => this.handleConfirmarLlegada());
+      btnCheckin.addEventListener('click', async () => {
+        if (!this.dashboardData) {
+          await this.cargarDashboard();
+        }
+
+        const turnoId = this.obtenerProximoTurnoId();
+        if (!turnoId) {
+          alert('⚠️ No tienes ningún turno próximo para hacer check-in');
+          return;
+        }
+        await this.handleCheckIn(turnoId);
+      });
       console.log('✓ btn-checkin');
     }
 
@@ -617,7 +675,7 @@ const PanelAlumnoPremium = {
     });
 
     // Botones topbar
-    document.querySelectorAll('.topbar button[data-action]').forEach(btn => {
+    document.querySelectorAll('.topbar-premium button[data-action]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const action = e.currentTarget.getAttribute('data-action');
         this.handleAccion(action);
@@ -633,13 +691,30 @@ const PanelAlumnoPremium = {
     alert('📅 Reservar turno\n\nPróximamente podrás reservar turno desde aquí.');
   },
 
-  handleConfirmarLlegada() {
+  async handleConfirmarLlegada() {
     const mapa = document.querySelector('.map-card');
     if (mapa) {
       mapa.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setTimeout(() => this.obtenerUbicacion(), 500);
-    } else {
-      this.obtenerUbicacion();
+      await new Promise(resolve => setTimeout(resolve, 350));
+    }
+
+    if (!this.dashboardData) {
+      await this.cargarDashboard();
+    }
+
+    const turnoId = this.obtenerProximoTurnoId();
+
+    if (!this.ubicacionUsuario) {
+      await this.obtenerUbicacion();
+    }
+
+    if (turnoId && this.ubicacionUsuario) {
+      await this.handleCheckIn(turnoId);
+      return;
+    }
+
+    if (!turnoId) {
+      alert('ℹ️ Ubicación obtenida. No tienes ningún turno próximo para hacer check-in.');
     }
   },
 
@@ -702,46 +777,87 @@ const PanelAlumnoPremium = {
   // ==================== GOOGLE MAPS ====================
 
   cargarGoogleMaps() {
-    console.log('🗺️ Intentando cargar Google Maps...');
+    console.log('🗺️ [Google Maps] Intentando cargar...');
 
     if (!APP_CONFIG.GOOGLE_MAPS) {
-      console.warn('⚠️ CONFIG.GOOGLE_MAPS no configurado');
+      console.error('❌ [Google Maps] CONFIG.GOOGLE_MAPS no configurado');
+      this.mostrarFallbackMapa();
       return;
     }
 
     const apiKey = APP_CONFIG.GOOGLE_MAPS.API_KEY;
 
     if (!apiKey || apiKey.trim() === '') {
-      console.warn('⚠️ Google Maps API key vacía. Mostrando fallback.');
+      console.warn('⚠️ [Google Maps] API key vacía. Ubicación funcionará sin mapa.');
+      this.mostrarFallbackMapa();
       return;
     }
 
     if (typeof google !== 'undefined' && google.maps) {
-      console.log('✅ Google Maps ya cargado');
+      console.log('✅ [Google Maps] Ya cargado');
       this.initMapa();
       return;
     }
 
-    console.log('📦 Cargando script Google Maps...');
+    console.log('📦 [Google Maps] Cargando script...');
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMapsCallback`;
     script.async = true;
     script.defer = true;
 
-    script.onerror = () => {
-      console.error('❌ Error al cargar Google Maps');
+    script.onerror = (error) => {
+      console.error('❌ [Google Maps] Error al cargar script:', error);
+      this.mostrarFallbackMapa();
+    };
+
+    // Capturar errores de Google Maps API
+    window.gm_authFailure = () => {
+      console.error('❌ [Google Maps] InvalidKeyMapError - API key inválida');
+      this.mostrarFallbackMapa();
     };
 
     document.head.appendChild(script);
+
+    // Timeout por si Google Maps no carga
+    setTimeout(() => {
+      if (typeof google === 'undefined' || !google.maps) {
+        console.error('❌ [Google Maps] Timeout - No se cargó en 10 segundos');
+        this.mostrarFallbackMapa();
+      }
+    }, 10000);
   },
 
   initMapa() {
     if (window.MapaCentro && typeof MapaCentro.inicializar === 'function') {
-      console.log('🗺️ Inicializando mapa con MapaCentro...');
-      MapaCentro.inicializar('mapa-centro');
+      console.log('🗺️ [Google Maps] Inicializando con MapaCentro...');
+      try {
+        MapaCentro.inicializar('mapa-centro');
+      } catch (error) {
+        console.error('❌ [Google Maps] Error al inicializar:', error);
+        this.mostrarFallbackMapa();
+      }
     } else {
-      console.warn('⚠️ MapaCentro no disponible');
+      console.warn('⚠️ [Google Maps] MapaCentro no disponible');
+      this.mostrarFallbackMapa();
     }
+  },
+
+  mostrarFallbackMapa() {
+    const container = document.getElementById('mapa-centro');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(147, 51, 234, 0.08)); border-radius: 16px; border: 2px dashed rgba(79, 70, 229, 0.2); padding: 32px; text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.4;">🗺️</div>
+        <p style="font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 1.05rem;">Mapa no disponible</p>
+        <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 4px;">
+          La ubicación y distancia funcionan sin necesidad del mapa
+        </p>
+        <p style="font-size: 0.75rem; color: #9ca3af;">
+          Usa "Usar mi ubicación" para calcular tu distancia al centro
+        </p>
+      </div>
+    `;
   },
 
   // ==================== UTILIDADES ====================
