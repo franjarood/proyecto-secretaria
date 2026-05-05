@@ -12,6 +12,13 @@ const PanelAdmin = (() => {
   let tramiteEditId = null;
   let tramiteFiltro = "";
 
+  let chartActividadLinea = null;
+  let chartActividadTop = null;
+  let chartUsuarios7d = null;
+
+  let historialCache = [];
+  let acciones7dCache = 0;
+
   // ===== USUARIOS =====
   let usuarios = [];
   let usuariosFiltro = "";
@@ -307,6 +314,8 @@ const PanelAdmin = (() => {
       usuariosPage = 1;
       renderUsuarios();
       renderRolesWidget();
+      const altas7d = renderChartUsuarios7d();
+      renderMiniKpisActividad(acciones7dCache, altas7d, usuarios.length);
     } catch (err) {
       setUsuariosMsg("Error cargando usuarios.", "error");
       throw err;
@@ -382,6 +391,8 @@ const PanelAdmin = (() => {
     el.estadoGeneralBadge.textContent = estado;
 
     el.estadoGeneralBadge.className = "badge " + (estado === "OK" ? "badge-success" : "badge-warning");
+
+    renderQuickMini();
   }
 
   async function loadCiclos() {
@@ -398,6 +409,10 @@ const PanelAdmin = (() => {
       .sort((a, b) => String(b.fechaHora).localeCompare(String(a.fechaHora)));
 
     const top = ordenado.slice(0, 8);
+
+    historialCache = ordenado.slice(0, 200);
+    acciones7dCache = renderChartActividadLinea() || 0;
+    renderChartActividadTop();
 
     if (!top.length) {
       el.adminActivityFeed.innerHTML = `<div class="text-secondary">Sin actividad registrada.</div>`;
@@ -445,6 +460,8 @@ const PanelAdmin = (() => {
       el.dotClima.className = "system-dot warn";
       el.txtClima.textContent = "No disponible";
     }
+
+    renderEstadoSistemaMini();
   }
 
   // =========================
@@ -852,6 +869,141 @@ const PanelAdmin = (() => {
     await loadTramites();
   }
 
+  function ensureChartJs() { return typeof Chart !== "undefined"; }
+
+  function isoDay(dateStr) {
+    if (!dateStr) return null;
+    return String(dateStr).slice(0, 10);
+  }
+
+  function lastNDaysLabels(n = 7) {
+    const out = [];
+    const now = new Date();
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      out.push(d.toISOString().slice(0, 10));
+    }
+    return out;
+  }
+
+  function renderMiniKpisActividad(acciones7d, altas7d, totalUsuarios) {
+    if (!el.miniKpisActividad) return;
+    el.miniKpisActividad.innerHTML = `
+      <div class="mini-kpi"><div class="label">Acciones (7d)</div><div class="value">${acciones7d}</div></div>
+      <div class="mini-kpi"><div class="label">Altas (7d)</div><div class="value">${altas7d}</div></div>
+      <div class="mini-kpi"><div class="label">Usuarios totales</div><div class="value">${totalUsuarios}</div></div>
+    `;
+  }
+
+  function entidadKey(h) {
+    const raw = (h?.entidadAfectada || "").toString().trim();
+    return raw ? raw.toUpperCase() : "OTROS";
+  }
+
+  function renderChartActividadLinea() {
+    if (!ensureChartJs() || !el.chartActividadLinea) return 0;
+
+    const labels = lastNDaysLabels(7);
+    const counts = Object.fromEntries(labels.map(d => [d, 0]));
+
+    for (const h of historialCache) {
+      const d = isoDay(h.fechaHora);
+      if (d && counts[d] !== undefined) counts[d]++;
+    }
+
+    const data = labels.map(d => counts[d]);
+
+    if (chartActividadLinea) chartActividadLinea.destroy();
+    chartActividadLinea = new Chart(el.chartActividadLinea, {
+      type: "line",
+      data: {
+        labels: labels.map(x => x.slice(5)),
+        datasets: [{ data, tension: 0.35, fill: false, borderWidth: 2, pointRadius: 3 }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+
+    const total = data.reduce((a,b)=>a+b,0);
+    el.chartActividadLineaMsg && (el.chartActividadLineaMsg.textContent = `Total acciones (7d): ${total}`);
+    return total;
+  }
+
+  function renderChartActividadTop() {
+    if (!ensureChartJs() || !el.chartActividadTop) return;
+
+    const counts = {};
+    for (const h of historialCache) {
+      const k = entidadKey(h);
+      counts[k] = (counts[k] || 0) + 1;
+    }
+
+    const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0, 8);
+    const labels = entries.map(([k]) => k);
+    const data = entries.map(([,v]) => v);
+
+    if (chartActividadTop) chartActividadTop.destroy();
+    chartActividadTop = new Chart(el.chartActividadTop, {
+      type: "bar",
+      data: { labels, datasets: [{ data, borderWidth: 1 }] },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+
+    el.chartActividadTopMsg && (el.chartActividadTopMsg.textContent = `Top entidades (basado en ${historialCache.length} registros)`);
+  }
+
+  function renderChartUsuarios7d() {
+    if (!ensureChartJs() || !el.chartUsuarios7d) return 0;
+
+    if (!Array.isArray(usuarios) || usuarios.length === 0) {
+      el.chartUsuarios7dMsg && (el.chartUsuarios7dMsg.textContent = "Sin usuarios.");
+      return 0;
+    }
+
+    const labels = lastNDaysLabels(7);
+    const counts = Object.fromEntries(labels.map(d => [d, 0]));
+
+    for (const u of usuarios) {
+      const d = isoDay(u.creadoEn);
+      if (d && counts[d] !== undefined) counts[d]++;
+    }
+
+    const data = labels.map(d => counts[d]);
+
+    if (chartUsuarios7d) chartUsuarios7d.destroy();
+    chartUsuarios7d = new Chart(el.chartUsuarios7d, {
+      type: "bar",
+      data: { labels: labels.map(x => x.slice(5)), datasets: [{ data, borderWidth: 1 }] },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+
+    const total = data.reduce((a,b)=>a+b,0);
+    el.chartUsuarios7dMsg && (el.chartUsuarios7dMsg.textContent = `Altas (7d): ${total}`);
+    return total;
+  }
+
+  function renderEstadoSistemaMini() {
+    if (!el.estadoSistemaMini) return;
+    el.estadoSistemaMini.innerHTML = `
+      <div class="system-list">
+        <div class="system-item"><div class="system-left"><strong>Backend</strong></div><span class="text-secondary">${escapeHtml(el.txtBackend?.textContent || "—")}</span></div>
+        <div class="system-item"><div class="system-left"><strong>Base de datos</strong></div><span class="text-secondary">${escapeHtml(el.txtDB?.textContent || "—")}</span></div>
+        <div class="system-item"><div class="system-left"><strong>Clima</strong></div><span class="text-secondary">${escapeHtml(el.txtClima?.textContent || "—")}</span></div>
+      </div>
+    `;
+    if (el.estadoGeneralBadge2 && el.estadoGeneralBadge) {
+      el.estadoGeneralBadge2.textContent = el.estadoGeneralBadge.textContent;
+      el.estadoGeneralBadge2.className = el.estadoGeneralBadge.className;
+    }
+  }
+
+  function renderQuickMini() {
+    if (!el.adminQuickGridMini || !el.adminQuickGrid) return;
+    const items = Array.from(el.adminQuickGrid.querySelectorAll(".card-quick-access")).slice(0, 4);
+    el.adminQuickGridMini.innerHTML = "";
+    items.forEach(n => el.adminQuickGridMini.appendChild(n.cloneNode(true)));
+  }
+
   async function initData() {
     await loadDashboard();
     await loadCiclos();
@@ -931,6 +1083,19 @@ const PanelAdmin = (() => {
     el.btnGuardarTramite = q("btnGuardarTramite");
     el.btnCancelarEdicionTramite = q("btnCancelarEdicionTramite");
     el.tramitesTbody = q("tramitesTbody");
+
+    el.chartActividadLinea = q("chartActividadLinea");
+    el.chartActividadLineaMsg = q("chartActividadLineaMsg");
+    el.chartActividadTop = q("chartActividadTop");
+    el.chartActividadTopMsg = q("chartActividadTopMsg");
+    el.chartUsuarios7d = q("chartUsuarios7d");
+    el.chartUsuarios7dMsg = q("chartUsuarios7dMsg");
+
+    el.estadoGeneralBadge2 = q("estadoGeneralBadge2");
+    el.estadoSistemaMini = q("estadoSistemaMini");
+    el.adminQuickGridMini = q("adminQuickGridMini");
+    el.miniKpisActividad = q("miniKpisActividad");
+
   }
 
   function init() {

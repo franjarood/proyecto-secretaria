@@ -105,6 +105,86 @@
 
             <div style="height:14px"></div>
 
+            <div class="admin-dashboard-grid">
+                <!-- IZQUIERDA: Actividad (línea) + mini KPIs -->
+                <div class="card no-hover admin-chart-wide">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-title-icon">📈</span>
+                            Actividad del sistema (7 días)
+                        </div>
+                        <span class="badge badge-warning">Real</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mini-kpis" id="miniKpisActividad"></div>
+                        <div style="height:10px"></div>
+                        <canvas id="chartActividadLinea" height="120"></canvas>
+                        <div class="text-secondary" id="chartActividadLineaMsg" style="margin-top:10px;"></div>
+                    </div>
+                </div>
+
+                <!-- DERECHA -->
+                <div class="admin-right-col">
+                    <div class="card no-hover">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon">🏷️</span>
+                                Top entidades (7 días)
+                            </div>
+                            <span class="badge badge-info">Real</span>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="chartActividadTop" height="140"></canvas>
+                            <div class="text-secondary" id="chartActividadTopMsg" style="margin-top:10px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card no-hover">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon">🟢</span>
+                                Estado del sistema
+                            </div>
+                            <span class="badge badge-success" id="estadoGeneralBadge2">OK</span>
+                        </div>
+                        <div class="card-body" id="estadoSistemaMini"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="height:14px"></div>
+
+            <div class="admin-dashboard-grid-2">
+                <div class="card no-hover">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-title-icon">👤</span>
+                            Usuarios registrados (7 días)
+                        </div>
+                        <span class="badge badge-info">Real</span>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartUsuarios7d" height="120"></canvas>
+                        <div class="text-secondary" id="chartUsuarios7dMsg" style="margin-top:10px;"></div>
+                    </div>
+                </div>
+
+                <div class="card no-hover">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-title-icon">⚡</span>
+                            Acciones rápidas
+                        </div>
+                        <span class="badge badge-info">Admin</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="grid-cards grid-cards-2" id="adminQuickGridMini"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="height:14px"></div>
+
             <div class="card no-hover" id="rolesWidget">
                 <div class="card-header">
                     <div class="card-title">
@@ -482,6 +562,8 @@
 <script src="js/components/sidebar.js"></script>
 <script src="js/components/header.js"></script>
 <script src="js/components/asistente.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- JS del panel admin (BOOM + CRUD) -->
 <script src="js/pages/panel-admin.js"></script>

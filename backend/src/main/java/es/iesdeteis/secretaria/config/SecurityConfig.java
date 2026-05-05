@@ -66,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("/turnos/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
                         .requestMatchers("/reservas/**").hasAnyRole("ADMIN", "SECRETARIA", "USUARIO", "ALUMNO")
                         .requestMatchers("/notificaciones/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
+                        .requestMatchers("/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
