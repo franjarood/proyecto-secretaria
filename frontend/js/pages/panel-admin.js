@@ -1,10 +1,25 @@
 const PanelAdmin = (() => {
 
   let user = null;
+
+  // ===== CICLOS =====
   let ciclos = [];
   let filtro = "";
-
   let editId = null;
+
+  // ===== TRÁMITES =====
+  let tramites = [];
+  let tramiteEditId = null;
+  let tramiteFiltro = "";
+
+  // ===== USUARIOS =====
+  let usuarios = [];
+  let usuariosFiltro = "";
+  let usuariosRolFiltro = "";
+  let usuariosPage = 1;
+  const usuariosPageSize = 10;
+
+  const ROLES = ["USUARIO", "ALUMNO", "SECRETARIA", "CONSERJE", "ADMIN", "PROFESOR"];
 
   const el = {};
   const q = (id) => document.getElementById(id);
@@ -23,6 +38,15 @@ const PanelAdmin = (() => {
     if (type === "ok") el.ciclosMsg.style.color = "var(--color-success-dark)";
     else if (type === "error") el.ciclosMsg.style.color = "var(--color-error-dark)";
     else el.ciclosMsg.style.color = "var(--text-secondary)";
+  }
+
+  function setUsuariosMsg(txt, type = "info") {
+    if (!el.usuariosMsg) return;
+    el.usuariosMsg.textContent = txt || "";
+    el.usuariosMsg.className = "admin-hint text-secondary";
+    if (type === "ok") el.usuariosMsg.style.color = "var(--color-success-dark)";
+    else if (type === "error") el.usuariosMsg.style.color = "var(--color-error-dark)";
+    else el.usuariosMsg.style.color = "var(--text-secondary)";
   }
 
   function escapeHtml(str) {
@@ -48,7 +72,6 @@ const PanelAdmin = (() => {
   function renderStats(tarjetas = []) {
     el.adminStatsGrid.innerHTML = "";
 
-    // Si backend devuelve 6 tarjetas, se verán como grid premium
     tarjetas.forEach((t) => {
       const icon = iconForTarjeta(t.titulo);
       const card = document.createElement("div");
@@ -182,6 +205,173 @@ const PanelAdmin = (() => {
     `).join("");
   }
 
+  // =========================
+  // USUARIOS
+  // =========================
+
+  function formatFecha(value) {
+    if (!value) return "-";
+    try {
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return String(value);
+      return d.toLocaleString("es-ES", {
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit"
+      });
+    } catch {
+      return String(value);
+    }
+  }
+
+  function usuariosAplicarFiltros() {
+    const qText = (usuariosFiltro || "").trim().toLowerCase();
+    const rol = (usuariosRolFiltro || "").trim().toUpperCase();
+
+    let list = [...usuarios];
+
+    if (rol) list = list.filter(u => String(u.rol || "").toUpperCase() === rol);
+
+    if (qText) {
+      list = list.filter(u => {
+        const hay = [
+          u.id, u.nombre, u.apellidos, u.email, u.dni, u.rol
+        ].map(v => (v ?? "").toString().toLowerCase()).join(" ");
+        return hay.includes(qText);
+      });
+    }
+
+    return list;
+  }
+
+  function renderUsuarios() {
+    if (!el.usuariosTbody) return;
+
+    const list = usuariosAplicarFiltros();
+    const total = list.length;
+
+    const totalPages = Math.max(1, Math.ceil(total / usuariosPageSize));
+    if (usuariosPage > totalPages) usuariosPage = totalPages;
+    if (usuariosPage < 1) usuariosPage = 1;
+
+    const start = (usuariosPage - 1) * usuariosPageSize;
+    const pageItems = list.slice(start, start + usuariosPageSize);
+
+    if (!pageItems.length) {
+      el.usuariosTbody.innerHTML = `<tr><td colspan="7" class="text-secondary">No hay usuarios para mostrar.</td></tr>`;
+    } else {
+      el.usuariosTbody.innerHTML = pageItems.map(u => {
+        const rolActual = String(u.rol || "").toUpperCase();
+        const creado = formatFecha(u.creadoEn);
+        const nombreFull = `${u.nombre || ""} ${u.apellidos || ""}`.trim();
+
+        const options = ROLES.map(r => `
+          <option value="${r}" ${r === rolActual ? "selected" : ""}>${r}</option>
+        `).join("");
+
+        return `
+          <tr data-user-id="${u.id}">
+            <td>${u.id}</td>
+            <td><strong>${escapeHtml(nombreFull || "-")}</strong></td>
+            <td>${escapeHtml(u.email || "-")}</td>
+            <td>${escapeHtml(u.dni || "-")}</td>
+            <td>
+              <select class="admin-input usuarios-role" data-user-id="${u.id}" data-original="${rolActual}">
+                ${options}
+              </select>
+            </td>
+            <td>${escapeHtml(creado)}</td>
+            <td>
+              <button class="btn btn-primary btn-sm btn-aplicar-rol" data-user-id="${u.id}" disabled>Aplicar</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    if (el.usuariosPagerMeta) {
+      const from = total ? (start + 1) : 0;
+      const to = Math.min(total, start + usuariosPageSize);
+      el.usuariosPagerMeta.innerHTML = `Mostrando <strong>${from}</strong>–<strong>${to}</strong> de <strong>${total}</strong>`;
+    }
+
+    if (el.btnUsuariosPrev) el.btnUsuariosPrev.disabled = usuariosPage <= 1;
+    if (el.btnUsuariosNext) el.btnUsuariosNext.disabled = usuariosPage >= totalPages;
+  }
+
+  async function loadUsuarios() {
+    setUsuariosMsg("Cargando usuarios...");
+    try {
+      usuarios = await API.get("/usuarios");
+      if (!Array.isArray(usuarios)) usuarios = [];
+      setUsuariosMsg(`Usuarios cargados: ${usuarios.length}`, "ok");
+      usuariosPage = 1;
+      renderUsuarios();
+      renderRolesWidget();
+    } catch (err) {
+      setUsuariosMsg("Error cargando usuarios.", "error");
+      throw err;
+    }
+  }
+
+  async function cambiarRolUsuario(userId, nuevoRol) {
+    const endpoint = `/usuarios/${userId}/cambiar-rol`;
+    const payload = { rol: nuevoRol };
+
+    return API.request(endpoint, {
+      method: "PATCH",
+      body: JSON.stringify(payload)
+    });
+  }
+
+  function colorForRol(rol) {
+    // Cohérente, sin inventar colores raros:
+    // Reutilizamos 6 tonos suaves (CSS inline) solo en dots/segments.
+    // Si prefieres, luego lo pasamos a variables.
+    const map = {
+      ADMIN: "#7c3aed",
+      SECRETARIA: "#2563eb",
+      CONSERJE: "#16a34a",
+      PROFESOR: "#0ea5e9",
+      ALUMNO: "#f59e0b",
+      USUARIO: "#64748b"
+    };
+    return map[String(rol || "").toUpperCase()] || "#64748b";
+  }
+
+  function renderRolesWidget() {
+    if (!el.rolesBar || !el.rolesLegend) return;
+
+    const counts = {};
+    (usuarios || []).forEach(u => {
+      const r = String(u.rol || "DESCONOCIDO").toUpperCase();
+      counts[r] = (counts[r] || 0) + 1;
+    });
+
+    const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+    const total = entries.reduce((acc, [,v]) => acc + v, 0) || 1;
+
+    // Barra apilada
+    el.rolesBar.innerHTML = entries.map(([rol, n]) => {
+      const pct = (n / total) * 100;
+      return `<div class="roles-seg" style="width:${pct}%;background:${colorForRol(rol)}"></div>`;
+    }).join("");
+
+    // Leyenda
+    el.rolesLegend.innerHTML = entries.map(([rol, n]) => {
+      const pct = Math.round((n / total) * 100);
+      return `
+        <div class="roles-item">
+          <span class="roles-dot" style="background:${colorForRol(rol)}"></span>
+          <span><strong>${escapeHtml(rol)}</strong> · ${n} (${pct}%)</span>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // =========================
+  // LOADERS EXISTENTES
+  // =========================
+
   async function loadDashboard() {
     const dto = await API.getDashboardAdmin();
 
@@ -191,7 +381,6 @@ const PanelAdmin = (() => {
     const estado = (dto.estadoGeneralSistema || "OK").toUpperCase();
     el.estadoGeneralBadge.textContent = estado;
 
-    // OK -> verde, si no -> warning
     el.estadoGeneralBadge.className = "badge " + (estado === "OK" ? "badge-success" : "badge-warning");
   }
 
@@ -203,7 +392,6 @@ const PanelAdmin = (() => {
   }
 
   async function loadActivity() {
-    // Puede devolver muchos: mostramos los últimos 8
     const list = await API.get("/historial");
     const ordenado = (list || [])
       .slice()
@@ -236,11 +424,9 @@ const PanelAdmin = (() => {
   }
 
   async function checkSystem() {
-    // Backend OK si dashboard cargó
     el.dotBackend.className = "system-dot";
     el.txtBackend.textContent = "Conectado";
 
-    // DB: si /ciclos responde
     try {
       await API.get("/ciclos");
       el.dotDB.className = "system-dot";
@@ -250,7 +436,6 @@ const PanelAdmin = (() => {
       el.txtDB.textContent = "Error";
     }
 
-    // Clima: si /clima/actual responde y climaDisponible=true
     try {
       const clima = await API.get("/clima/actual");
       const ok = !!clima?.climaDisponible;
@@ -261,6 +446,10 @@ const PanelAdmin = (() => {
       el.txtClima.textContent = "No disponible";
     }
   }
+
+  // =========================
+  // MODAL CICLOS
+  // =========================
 
   function openModal(ciclo) {
     editId = ciclo.id;
@@ -301,6 +490,7 @@ const PanelAdmin = (() => {
 
     el.formCiclo.reset();
     await loadCiclos();
+    await checkSystem();
   }
 
   async function guardarEdicion(e) {
@@ -328,6 +518,7 @@ const PanelAdmin = (() => {
 
     closeModal();
     await loadCiclos();
+    await checkSystem();
   }
 
   async function desactivar(id) {
@@ -335,6 +526,7 @@ const PanelAdmin = (() => {
     await API.request(`/ciclos/${id}/desactivar`, { method: "PATCH" });
     toast("Ciclo desactivado", `ID ${id}`);
     await loadCiclos();
+    await checkSystem();
   }
 
   async function activar(id) {
@@ -345,15 +537,24 @@ const PanelAdmin = (() => {
     await API.put(`/ciclos/${id}`, payload);
     toast("Ciclo activado", `ID ${id}`);
     await loadCiclos();
+    await checkSystem();
   }
 
   function bind() {
-    // Buscar desde el input del header
+    // Buscar desde el input del header:
+    // - filtra ciclos
+    // - y también usuarios (mismo texto)
     el.searchInput.addEventListener("input", () => {
       filtro = el.searchInput.value;
+      usuariosFiltro = el.searchInput.value;
+      tramiteFiltro = el.searchInput.value;
+      renderTramites();
       renderCiclos();
+      usuariosPage = 1;
+      renderUsuarios();
     });
 
+    // CICLOS
     el.formCiclo.addEventListener("submit", (e) => {
       crearCiclo(e).catch(err => toast("Error", err.message));
     });
@@ -384,11 +585,278 @@ const PanelAdmin = (() => {
     el.btnRefreshAdmin.addEventListener("click", () => {
       initData().catch(err => toast("Error", err.message));
     });
+
+    // USUARIOS: buscador + filtro rol + recargar
+    if (el.usuariosSearch) {
+      el.usuariosSearch.addEventListener("input", () => {
+        usuariosFiltro = el.usuariosSearch.value;
+        usuariosPage = 1;
+        renderUsuarios();
+      });
+    }
+
+    if (el.usuariosRolFilter) {
+      el.usuariosRolFilter.addEventListener("change", () => {
+        usuariosRolFiltro = el.usuariosRolFilter.value;
+        usuariosPage = 1;
+        renderUsuarios();
+      });
+    }
+
+    if (el.btnRefreshUsuarios) {
+      el.btnRefreshUsuarios.addEventListener("click", () => {
+        loadUsuarios().catch(err => toast("Error", err.message));
+      });
+    }
+
+    // Paginación
+    if (el.btnUsuariosPrev) {
+      el.btnUsuariosPrev.addEventListener("click", () => {
+        usuariosPage = Math.max(1, usuariosPage - 1);
+        renderUsuarios();
+      });
+    }
+
+    if (el.btnUsuariosNext) {
+      el.btnUsuariosNext.addEventListener("click", () => {
+        usuariosPage = usuariosPage + 1;
+        renderUsuarios();
+      });
+    }
+
+    // Delegación de eventos para select/botón aplicar (tabla usuarios)
+    if (el.usuariosTbody) {
+      el.usuariosTbody.addEventListener("change", (e) => {
+        const sel = e.target.closest("select.usuarios-role");
+        if (!sel) return;
+
+        const row = sel.closest("tr");
+        const btn = row?.querySelector(".btn-aplicar-rol");
+        if (!btn) return;
+
+        const original = String(sel.getAttribute("data-original") || "").toUpperCase();
+        const current = String(sel.value || "").toUpperCase();
+
+        btn.disabled = (original === current);
+
+        if (original !== current) row.classList.add("usuarios-row-changed");
+        else row.classList.remove("usuarios-row-changed");
+      });
+
+      el.usuariosTbody.addEventListener("click", (e) => {
+        const btn = e.target.closest("button.btn-aplicar-rol");
+        if (!btn) return;
+
+        const userId = btn.getAttribute("data-user-id");
+        const row = btn.closest("tr");
+        const sel = row?.querySelector("select.usuarios-role");
+        if (!sel) return;
+
+        const original = String(sel.getAttribute("data-original") || "").toUpperCase();
+        const nuevoRol = String(sel.value || "").toUpperCase();
+
+        if (nuevoRol === original) return;
+
+        (async () => {
+          // Confirmación solo si subes a ADMIN (para evitar liadas)
+          if (nuevoRol === "ADMIN") {
+            const ok = confirm("Vas a asignar rol ADMIN. ¿Seguro?");
+            if (!ok) {
+              sel.value = original;
+              btn.disabled = true;
+              row.classList.remove("usuarios-row-changed");
+              return;
+            }
+          }
+
+          btn.disabled = true;
+          const oldText = btn.textContent;
+          btn.textContent = "Aplicando...";
+
+          try {
+            const updated = await cambiarRolUsuario(userId, nuevoRol);
+
+            // Actualizamos en memoria
+            const idx = usuarios.findIndex(u => String(u.id) === String(userId));
+            if (idx >= 0) usuarios[idx] = updated;
+
+            // Marcamos original como el nuevo rol
+            const rolFinal = String(updated?.rol || nuevoRol).toUpperCase();
+            sel.setAttribute("data-original", rolFinal);
+            sel.value = rolFinal;
+
+            row.classList.remove("usuarios-row-changed");
+            toast("Rol actualizado ✅", `Usuario #${userId} → ${rolFinal}`);
+
+            // Re-render para que filtros/paginación se mantengan coherentes
+            renderUsuarios();
+
+          } catch (err) {
+            toast("Error", err.message || "No se pudo cambiar el rol");
+            // Revertimos visualmente si falla
+            sel.value = original;
+            btn.disabled = true;
+            row.classList.remove("usuarios-row-changed");
+          } finally {
+            btn.textContent = oldText;
+          }
+        })().catch(err => toast("Error", err.message));
+      });
+    }
+
+    // TRÁMITES (blindado)
+    if (el.formTramite) {
+      el.formTramite.addEventListener("submit", (e) => {
+        guardarTramite(e).catch(err => toast("Error", err.message));
+      });
+    }
+
+    el.btnCancelarEdicionTramite?.addEventListener("click", resetTramiteForm);
+
+    el.btnRefreshTramites?.addEventListener("click", () => {
+      loadTramites().catch(err => toast("Error", err.message));
+    });
+
+    // clicks tabla trámites
+    if (el.tramitesTbody) {
+      el.tramitesTbody.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-action]");
+        if (!btn) return;
+
+        const id = Number(btn.dataset.id);
+        const action = btn.dataset.action;
+
+        (async () => {
+          if (action === "edit-tramite") {
+            const t = tramites.find(x => x.id === id);
+            if (!t) return;
+
+            tramiteEditId = id;
+            el.tramiteNombre.value = t.nombre || "";
+            el.tramiteDescripcion.value = t.descripcion || "";
+            el.tramiteDuracion.value = t.duracionEstimada ?? 10;
+            el.tramiteRequiereDoc.value = String(!!t.requiereDocumentacion);
+            el.tramiteDestacado.value = String(!!t.destacado);
+            el.tramiteVisible.value = String(!!t.visiblePublicamente);
+
+            el.btnGuardarTramite.textContent = "💾 Guardar";
+            el.btnCancelarEdicionTramite.style.display = "inline-flex";
+            toast("Edición", `Editando trámite ID ${id}`);
+          }
+
+          if (action === "del-tramite") {
+            return borrarTramite(id);
+          }
+        })().catch(err => toast("Error", err.message));
+      });
+    }
+  }
+
+  function boolBadge(value, yes="Sí", no="No") {
+    return value ? `<span class="badge badge-success">${yes}</span>` : `<span class="badge badge-error">${no}</span>`;
+  }
+
+  function setTramitesMsg(txt, type = "info") {
+    if (!el.tramitesMsg) return;
+    el.tramitesMsg.textContent = txt || "";
+    el.tramitesMsg.className = "admin-hint text-secondary";
+    if (type === "ok") el.tramitesMsg.style.color = "var(--color-success-dark)";
+    else if (type === "error") el.tramitesMsg.style.color = "var(--color-error-dark)";
+    else el.tramitesMsg.style.color = "var(--text-secondary)";
+  }
+
+  function renderTramites() {
+    const f = (tramiteFiltro || "").trim().toLowerCase();
+
+    const lista = !f ? tramites : tramites.filter(t =>
+      (t.nombre || "").toLowerCase().includes(f) ||
+      (t.descripcion || "").toLowerCase().includes(f)
+    );
+
+    if (!lista.length) {
+      el.tramitesTbody.innerHTML = `<tr><td colspan="8" class="text-secondary">No hay trámites.</td></tr>`;
+      return;
+    }
+
+    el.tramitesTbody.innerHTML = lista.map(t => `
+      <tr>
+        <td>${t.id}</td>
+        <td><strong>${escapeHtml(t.nombre)}</strong></td>
+        <td>${escapeHtml(t.descripcion || "")}</td>
+        <td>${escapeHtml(String(t.duracionEstimada ?? "-"))} min</td>
+        <td>${boolBadge(!!t.requiereDocumentacion, "Sí", "No")}</td>
+        <td>${boolBadge(!!t.destacado, "Sí", "No")}</td>
+        <td>${boolBadge(!!t.visiblePublicamente, "Sí", "No")}</td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-secondary btn-sm" data-action="edit-tramite" data-id="${t.id}">✏️ Editar</button>
+            <button class="btn btn-danger btn-sm" data-action="del-tramite" data-id="${t.id}">🗑️ Borrar</button>
+          </div>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  async function loadTramites() {
+    setTramitesMsg("Cargando trámites...");
+    tramites = await API.get("/tipos-tramite");
+    if (!Array.isArray(tramites)) tramites = [];
+    setTramitesMsg(`Trámites cargados: ${tramites.length}`, "ok");
+    renderTramites();
+  }
+
+  function resetTramiteForm() {
+    tramiteEditId = null;
+    el.formTramite.reset();
+    el.btnGuardarTramite.textContent = "➕ Crear";
+    el.btnCancelarEdicionTramite.style.display = "none";
+  }
+
+  async function guardarTramite(e) {
+    e.preventDefault();
+
+    const payload = {
+      nombre: el.tramiteNombre.value.trim(),
+      descripcion: el.tramiteDescripcion.value.trim(),
+      duracionEstimada: Number(el.tramiteDuracion.value),
+      requiereDocumentacion: el.tramiteRequiereDoc.value === "true",
+      destacado: el.tramiteDestacado.value === "true",
+      visiblePublicamente: el.tramiteVisible.value === "true"
+    };
+
+    if (!payload.nombre || !payload.descripcion) {
+      toast("Faltan datos", "Nombre y descripción son obligatorios.");
+      return;
+    }
+    if (!Number.isFinite(payload.duracionEstimada) || payload.duracionEstimada <= 0) {
+      toast("Duración inválida", "Pon una duración > 0.");
+      return;
+    }
+
+    if (tramiteEditId) {
+      await API.put(`/tipos-tramite/${tramiteEditId}`, { id: tramiteEditId, ...payload });
+      toast("Trámite actualizado ✅", `ID ${tramiteEditId}`);
+    } else {
+      await API.post("/tipos-tramite", payload);
+      toast("Trámite creado ✅", payload.nombre);
+    }
+
+    resetTramiteForm();
+    await loadTramites();
+  }
+
+  async function borrarTramite(id) {
+    if (!confirm("¿Borrar este trámite?")) return;
+    await API.delete(`/tipos-tramite/${id}`);
+    toast("Trámite borrado", `ID ${id}`);
+    await loadTramites();
   }
 
   async function initData() {
     await loadDashboard();
     await loadCiclos();
+    await loadTramites().catch(() => {});
+    await loadUsuarios().catch(() => {});
     await loadActivity();
     await checkSystem();
   }
@@ -401,6 +869,7 @@ const PanelAdmin = (() => {
 
     el.btnRefreshAdmin = q("btnRefreshAdmin");
 
+    // CICLOS
     el.formCiclo = q("formCiclo");
     el.cicloNombre = q("cicloNombre");
     el.cicloCodigo = q("cicloCodigo");
@@ -409,8 +878,23 @@ const PanelAdmin = (() => {
     el.ciclosTbody = q("ciclosTbody");
     el.ciclosMsg = q("ciclosMsg");
 
+    // USUARIOS
+    el.usuariosMsg = q("usuariosMsg");
+    el.usuariosSearch = q("usuariosSearch");
+    el.usuariosRolFilter = q("usuariosRolFilter");
+    el.btnRefreshUsuarios = q("btnRefreshUsuarios");
+    el.usuariosTbody = q("usuariosTbody");
+    el.usuariosPagerMeta = q("usuariosPagerMeta");
+    el.btnUsuariosPrev = q("btnUsuariosPrev");
+    el.btnUsuariosNext = q("btnUsuariosNext");
+
+    el.rolesBar = q("rolesBar");
+    el.rolesLegend = q("rolesLegend");
+
+    // ACTIVIDAD
     el.adminActivityFeed = q("adminActivityFeed");
 
+    // SISTEMA
     el.estadoGeneralBadge = q("estadoGeneralBadge");
     el.dotBackend = q("dotBackend");
     el.txtBackend = q("txtBackend");
@@ -419,10 +903,12 @@ const PanelAdmin = (() => {
     el.dotClima = q("dotClima");
     el.txtClima = q("txtClima");
 
+    // TOAST
     el.toast = q("toast");
     el.toastTitle = q("toastTitle");
     el.toastMsg = q("toastMsg");
 
+    // MODAL CICLOS
     el.modalOverlay = q("modalOverlay");
     el.modalCiclo = q("modalCiclo");
     el.btnCerrarModal = q("btnCerrarModal");
@@ -431,6 +917,20 @@ const PanelAdmin = (() => {
     el.editCodigo = q("editCodigo");
     el.editFamilia = q("editFamilia");
     el.editGrado = q("editGrado");
+
+    // TRÁMITES
+    el.tramitesMsg = q("tramitesMsg");
+    el.btnRefreshTramites = q("btnRefreshTramites");
+    el.formTramite = q("formTramite");
+    el.tramiteNombre = q("tramiteNombre");
+    el.tramiteDescripcion = q("tramiteDescripcion");
+    el.tramiteDuracion = q("tramiteDuracion");
+    el.tramiteRequiereDoc = q("tramiteRequiereDoc");
+    el.tramiteDestacado = q("tramiteDestacado");
+    el.tramiteVisible = q("tramiteVisible");
+    el.btnGuardarTramite = q("btnGuardarTramite");
+    el.btnCancelarEdicionTramite = q("btnCancelarEdicionTramite");
+    el.tramitesTbody = q("tramitesTbody");
   }
 
   function init() {

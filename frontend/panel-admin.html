@@ -13,9 +13,11 @@
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/cards.css">
-
+    <link rel="stylesheet" href="css/panel-admin-usuarios.css">
     <!-- BOOM Admin -->
     <link rel="stylesheet" href="css/panel-admin.css">
+
+    <link rel="icon" href="data:,">
 </head>
 
 <body data-rol="admin">
@@ -100,6 +102,25 @@
             <div class="stats-grid" id="adminStatsGrid">
                 <!-- JS: /dashboard/admin -->
             </div>
+
+            <div style="height:14px"></div>
+
+            <div class="card no-hover" id="rolesWidget">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="card-title-icon">🎭</span>
+                        Distribución de roles
+                    </div>
+                    <span class="badge badge-info">Real</span>
+                </div>
+
+                <div class="card-body">
+                    <div class="roles-bar" id="rolesBar"></div>
+                    <div class="roles-legend" id="rolesLegend"></div>
+                </div>
+            </div>
+
+
         </div>
 
         <!-- ==================== ACCESOS RÁPIDOS ==================== -->
@@ -184,17 +205,139 @@
                         </div>
                     </div>
 
-                    <!-- USUARIOS (placeholder BOOM para la próxima fase) -->
+                    <!-- CRUD TIPOS DE TRÁMITE -->
+                    <div class="card no-hover" id="tramitesCard">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-title-icon">📋</span>
+                                Tipos de Trámite
+                            </div>
+                            <span class="badge badge-accent">CRUD</span>
+                        </div>
+
+                        <div class="admin-toolbar">
+                            <div class="admin-hint text-secondary" id="tramitesMsg">Listo.</div>
+                            <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap;">
+                                <button class="btn btn-secondary btn-sm" id="btnRefreshTramites">🔄 Recargar</button>
+                            </div>
+                        </div>
+
+                        <form id="formTramite" class="admin-form" style="grid-template-columns: 1.1fr 1.4fr .6fr .7fr .6fr .7fr auto auto;">
+                            <div class="admin-field">
+                                <label>Nombre *</label>
+                                <input id="tramiteNombre" class="admin-input" placeholder="Ej: Matrícula" required>
+                            </div>
+
+                            <div class="admin-field">
+                                <label>Descripción *</label>
+                                <input id="tramiteDescripcion" class="admin-input" placeholder="Ej: Entrega de documentación y validación" required>
+                            </div>
+
+                            <div class="admin-field">
+                                <label>Duración (min) *</label>
+                                <input id="tramiteDuracion" class="admin-input" type="number" min="1" step="1" placeholder="10" required>
+                            </div>
+
+                            <div class="admin-field">
+                                <label>Requiere doc</label>
+                                <select id="tramiteRequiereDoc" class="admin-input">
+                                    <option value="true" selected>Sí</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+
+                            <div class="admin-field">
+                                <label>Destacado</label>
+                                <select id="tramiteDestacado" class="admin-input">
+                                    <option value="false" selected>No</option>
+                                    <option value="true">Sí</option>
+                                </select>
+                            </div>
+
+                            <div class="admin-field">
+                                <label>Visible público</label>
+                                <select id="tramiteVisible" class="admin-input">
+                                    <option value="true" selected>Sí</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+
+                            <button class="btn btn-primary" type="submit" id="btnGuardarTramite">➕ Crear</button>
+                            <button class="btn btn-secondary" type="button" id="btnCancelarEdicionTramite" style="display:none;">✖ Cancelar</button>
+                        </form>
+
+                        <div style="height:14px"></div>
+
+                        <div class="table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                <tr>
+                                    <th style="width:70px">ID</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th style="width:120px">Duración</th>
+                                    <th style="width:140px">Req. Doc</th>
+                                    <th style="width:120px">Destacado</th>
+                                    <th style="width:150px">Visible</th>
+                                    <th style="width:220px">Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody id="tramitesTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ==================== USUARIOS (YA REAL) ==================== -->
                     <div class="card no-hover" id="usuarios">
                         <div class="card-header">
                             <div class="card-title">
                                 <span class="card-title-icon">👥</span>
-                                Usuarios (próxima fase)
+                                Gestión de Usuarios
                             </div>
-                            <span class="badge badge-info">BOOM en demo</span>
+                            <span class="badge badge-info">ADMIN</span>
                         </div>
-                        <div class="card-body">
-                            Aquí irá el listado de usuarios + cambiar rol (USUARIO → ALUMNO) y gestión avanzada.
+
+                        <div class="admin-toolbar">
+                            <div class="admin-hint text-secondary" id="usuariosMsg">Listo.</div>
+
+                            <div class="usuarios-actions">
+                                <input id="usuariosSearch" class="admin-input usuarios-search" placeholder="Buscar (nombre, email, DNI, rol...)">
+                                <select id="usuariosRolFilter" class="admin-input usuarios-select">
+                                    <option value="">Todos los roles</option>
+                                    <option value="USUARIO">USUARIO</option>
+                                    <option value="ALUMNO">ALUMNO</option>
+                                    <option value="SECRETARIA">SECRETARIA</option>
+                                    <option value="CONSERJE">CONSERJE</option>
+                                    <option value="ADMIN">ADMIN</option>
+                                    <option value="PROFESOR">PROFESOR</option>
+                                </select>
+                                <button class="btn btn-secondary btn-sm" id="btnRefreshUsuarios">🔄 Recargar</button>
+                            </div>
+                        </div>
+
+                        <div class="table-wrap">
+                            <table class="admin-table usuarios-table">
+                                <thead>
+                                <tr>
+                                    <th style="width:70px">ID</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th style="width:130px">DNI</th>
+                                    <th style="width:170px">Rol</th>
+                                    <th style="width:160px">Creado</th>
+                                    <th style="width:140px">Acción</th>
+                                </tr>
+                                </thead>
+                                <tbody id="usuariosTbody"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="usuarios-pager">
+                            <div class="text-secondary" id="usuariosPagerMeta">—</div>
+                            <div class="actions">
+                                <button class="btn btn-secondary btn-sm" id="btnUsuariosPrev">◀</button>
+                                <button class="btn btn-secondary btn-sm" id="btnUsuariosNext">▶</button>
+                            </div>
                         </div>
                     </div>
 

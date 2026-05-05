@@ -1,0 +1,43 @@
+/* ============================================
+   PANEL ADMIN - MÓDULO USUARIOS (coherente)
+   Usa el mismo lenguaje que panel-admin.css:
+   admin-input, admin-table, admin-toolbar, etc.
+   ============================================ */
+
+/* Barra de acciones (buscador + filtro + recargar) */
+.usuarios-actions{
+  display:flex;
+  align-items:center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+/* Ajustes de tamaño (reutiliza admin-input) */
+.usuarios-search{
+  min-width: 260px;
+}
+
+.usuarios-select{
+  min-width: 200px;
+  appearance: none;
+}
+
+/* Resalta la fila cuando cambias el rol pero aún no has aplicado */
+.usuarios-row-changed td {
+  background: rgba(147,51,234,.06);
+}
+
+/* Pie de paginación */
+.usuarios-pager{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-md);
+}
+
+/* Opcional: que el select de rol se vea consistente */
+.usuarios-table select.admin-input{
+  padding: 10px 12px;
+}
