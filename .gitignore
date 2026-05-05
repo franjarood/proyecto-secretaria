@@ -34,3 +34,5 @@ build/
 
 ### Configuración local con API keys ###
 frontend/js/config.local.js
+
+secretaria_clase_backup.sql
