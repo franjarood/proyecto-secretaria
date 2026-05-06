@@ -2,103 +2,96 @@
   const el = {};
   const q = (id) => document.getElementById(id);
 
-  const HELP = {
-    matricula: `✅ Trae DNI/NIE, documentación académica previa (si aplica) y justificante de pago si corresponde.
-📌 Consejo: prepara copias o PDFs para agilizar la atención.`,
-    docs: `📄 Entrega de documentación: revisa que los documentos estén firmados y legibles.
-💡 Si falta algo, te indicarán cómo completarlo y podrás volver con prioridad (mejora futura).`,
-    cert: `🏷️ Certificados: indica el tipo (matrícula, notas, asistencia).
-⏱️ Algunos certificados pueden tardar; consulta si hay recogida posterior.`,
-    info: `ℹ️ Información general: para dudas rápidas, el trámite suele ser corto.
-✅ Si tu consulta requiere documentos, usa “Documentación”.`
-  };
-
-  function setMsg(txt, type="info"){
+  // =========================
+  // Helpers UI
+  // =========================
+  function setMsg(txt) {
     if (!el.kMsg) return;
     el.kMsg.textContent = txt || "";
-    el.kMsg.style.opacity = "1";
-
-    // En el kiosko claro, colores más coherentes
-    el.kMsg.style.color =
-      type === "ok" ? "#0f766e" :
-      type === "error" ? "#b91c1c" :
-      "#55708b";
   }
 
-  function escapeHtml(str){
+  function escapeHtml(str) {
     return String(str ?? "")
-      .replaceAll("&","&amp;").replaceAll("<","&lt;")
-      .replaceAll(">","&gt;").replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;").replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
-  function requireKioskoRole(user){
-    const r = String(user?.rol || "").toUpperCase();
-    return ["ADMIN", "SECRETARIA", "CONSERJE"].includes(r);
-  }
-
-  function tickClock(){
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2,"0");
-    const mm = String(now.getMinutes()).padStart(2,"0");
-    el.kTime.textContent = `${hh}:${mm}`;
-    el.kDate.textContent = now.toLocaleDateString("es-ES", {
-      weekday:"short", year:"numeric", month:"2-digit", day:"2-digit"
-    });
-  }
-
-  // Kiosko = evitar scroll global
-  function setActiveStep(step){
-    el.stepSacar.classList.remove("active");
-    el.stepConfirmar.classList.remove("active");
-    el.stepConsultar.classList.remove("active");
-    step.classList.add("active");
-
-    // BOOM UX: foco directo en inputs según modo
-    if (step === el.stepConfirmar) setTimeout(() => el.turnoIdConfirmar?.focus(), 60);
-    if (step === el.stepConsultar) setTimeout(() => el.turnoIdConsultar?.focus(), 60);
-  }
-
-  function getSelectedTramite(){
-    const sel = document.querySelector("input[name='tramite']:checked");
-    if (!sel) return null;
-    const id = Number(sel.value);
-    return tramites.find(t => Number(t.id) === id) || null;
-  }
-
-  function isValidEmail(email){
+  function isValidEmail(email) {
     if (!email) return false;
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   }
 
-  // BOOM: flash visual del ticket
-  function flashTicket(){
-    if (!el.ticketBox) return;
-    el.ticketBox.style.transform = "scale(1.01)";
-    el.ticketBox.style.transition = "transform .18s ease, box-shadow .18s ease";
-    el.ticketBox.style.boxShadow = "0 24px 60px rgba(14,165,233,.22)";
-    setTimeout(() => {
-      el.ticketBox.style.transform = "scale(1)";
-      el.ticketBox.style.boxShadow = "";
-    }, 220);
+  function requireKioskoRole(user) {
+    const r = String(user?.rol || "").toUpperCase();
+    return ["ADMIN", "SECRETARIA", "CONSERJE"].includes(r);
   }
 
-  async function copyToClipboard(text){
-    try{
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(String(text));
-        return true;
-      }
-    }catch{}
-    return false;
+  function tickClock() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    el.kTime.textContent = `${hh}:${mm}`;
+    el.kDate.textContent = now.toLocaleDateString("es-ES", {
+      weekday: "short", year: "numeric", month: "2-digit", day: "2-digit"
+    });
   }
 
   // =========================
-  // CLIMA + ESTADO DEL SISTEMA
+  // Navegación (HOME es referencia)
   // =========================
-  async function cargarClima(){
-    if (!el.kClima) return;
-    try{
+  function setActiveNav(go) {
+    document.querySelectorAll(".k-side-item").forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-go") === go);
+    });
+  }
+
+  function showOnly(sectionId) {
+    // Oculta steps
+    [el.stepSacar, el.stepConfirmar, el.stepConsultar].forEach(s => {
+      if (s) s.classList.remove("active");
+    });
+
+    // Mostrar sólo el que toque
+    if (sectionId === "home") {
+      document.getElementById("home")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (sectionId === "sacar") el.stepSacar?.classList.add("active");
+    if (sectionId === "confirmar") el.stepConfirmar?.classList.add("active");
+    if (sectionId === "consultar") el.stepConsultar?.classList.add("active");
+
+
+    if (sectionId === "info") document.getElementById("info")?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    // Si es step, hacemos scroll al propio step
+    if (["sacar", "confirmar", "consultar"].includes(sectionId)) {
+      const map = {
+        sacar: el.stepSacar,
+        confirmar: el.stepConfirmar,
+        consultar: el.stepConsultar
+      };
+      map[sectionId]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  function go(sectionId) {
+    setActiveNav(sectionId === "home" ? "home" : sectionId);
+    showOnly(sectionId);
+
+    // UX: foco
+    if (sectionId === "sacar") setTimeout(() => el.tramiteSelect?.focus(), 120);
+    if (sectionId === "confirmar") setTimeout(() => el.turnoIdConfirmar?.focus(), 120);
+    if (sectionId === "consultar") setTimeout(() => el.turnoIdConsultar?.focus(), 120);
+  }
+
+  // =========================
+  // Clima + Estado sistema
+  // =========================
+  async function cargarClima() {
+    if (!el.kClima) return false;
+    try {
       const clima = await API.get("/clima/actual");
       if (clima?.climaDisponible) {
         el.kClima.textContent = `${clima.icono || "🌤"} ${clima.ciudad || "Vigo"} · ${clima.temperatura ?? "--"}°C`;
@@ -106,76 +99,92 @@
         el.kClima.textContent = `🌥 ${clima?.ciudad || "Vigo"} · No disponible`;
       }
       return !!clima?.climaDisponible;
-    }catch{
+    } catch {
       el.kClima.textContent = "🌥 Clima · No disponible";
       return false;
     }
   }
 
-  async function verificarBackend(){
-    // Ping simple: usa un endpoint que sabes que responde si hay sesión
-    try{
+  async function verificarBackend() {
+    try {
       await API.get("/tipos-tramite");
       return true;
-    }catch{
+    } catch {
       return false;
     }
   }
 
-  function setEstadoSistema({ backendOk, climaOk }){
+  function setEstadoSistema({ backendOk, climaOk }) {
     if (!el.kEstadoSistema) return;
 
-    if (backendOk && climaOk) {
-      el.kEstadoSistema.textContent = "🟢 Sistema: OK";
-    } else if (backendOk && !climaOk) {
-      el.kEstadoSistema.textContent = "🟡 Sistema: OK (clima no)";
-    } else {
-      el.kEstadoSistema.textContent = "🔴 Sistema: sin conexión";
-    }
+    if (backendOk && climaOk) el.kEstadoSistema.textContent = "🟢 Sistema: OK";
+    else if (backendOk && !climaOk) el.kEstadoSistema.textContent = "🟡 Sistema: OK (clima no)";
+    else el.kEstadoSistema.textContent = "🔴 Sistema: sin conexión";
+  }
+
+  async function initSystemBadges() {
+    const backendOk = await verificarBackend();
+    const climaOk = await cargarClima();
+    setEstadoSistema({ backendOk, climaOk });
+
+    setInterval(async () => {
+      const b = await verificarBackend();
+      const c = await cargarClima();
+      setEstadoSistema({ backendOk: b, climaOk: c });
+    }, 120000);
   }
 
   // =========================
-  // TRÁMITES
+  // Trámites (select)
   // =========================
   let tramites = [];
 
-  async function loadTramites(){
-    setMsg("Cargando trámites...");
+  function getSelectedTramite() {
+    const id = Number(el.tramiteSelect?.value);
+    if (!Number.isFinite(id) || !id) return null;
+    return tramites.find(t => Number(t.id) === id) || null;
+  }
+
+  async function loadTramites() {
+    setMsg("Cargando trámites…");
     const list = await API.get("/tipos-tramite");
     tramites = Array.isArray(list) ? list : [];
 
-    if (!tramites.length){
-      el.tramitesBox.innerHTML = `<div class="k-empty">No hay trámites. Crea alguno en Admin.</div>`;
-      setMsg("No hay trámites disponibles.", "error");
+    el.tramiteSelect.innerHTML = `<option value="">Selecciona un trámite…</option>`;
+
+    if (!tramites.length) {
+      setMsg("No hay trámites disponibles. Crea alguno en Admin.");
+      el.tramiteInfo.textContent = "No hay trámites disponibles.";
       return;
     }
 
-    el.tramitesBox.innerHTML = tramites.map(t => `
-      <label class="k-tramite">
-        <input type="radio" name="tramite" value="${t.id}">
-        <div>
-          <div class="k-tramite-name">${escapeHtml(t.nombre || "Trámite")}</div>
-          <div class="k-tramite-desc">${escapeHtml(t.descripcion || "")}</div>
-        </div>
-      </label>
-    `).join("");
+    // Filtrar visibles si existe el campo
+    const visibles = tramites.filter(t => t.visiblePublicamente !== false);
+    const lista = visibles.length ? visibles : tramites;
 
-    setMsg(`Trámites cargados: ${tramites.length}`, "ok");
+    lista.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = String(t.id);
+      opt.textContent = `${t.nombre || "Trámite"} · ${t.duracionEstimada ?? "-"} min`;
+      el.tramiteSelect.appendChild(opt);
+    });
+
+    setMsg(`Trámites cargados: ${lista.length}`);
+    el.tramiteInfo.textContent = "Selecciona un trámite para ver más información.";
   }
 
   // =========================
-  // TICKET
+  // Ticket UI
   // =========================
-  function showTicket(turno, tramiteNombre){
-    el.ticketBox.style.display = "grid";
+  function showTicket(turno, tramiteNombre) {
+    el.ticketBox.style.display = "block";
     el.ticketNumero.textContent = String(turno?.numeroTurno ?? "A-???");
     el.ticketId.textContent = String(turno?.id ?? "—");
     el.ticketEstado.textContent = String(turno?.estadoTurno ?? "—");
     el.ticketTramite.textContent = tramiteNombre || "—";
-    flashTicket();
   }
 
-  function resetTicket(){
+  function resetTicket() {
     el.ticketBox.style.display = "none";
     el.ticketNumero.textContent = "A-000";
     el.ticketId.textContent = "—";
@@ -184,225 +193,241 @@
   }
 
   // =========================
-  // ACCIONES
+  // Acciones
   // =========================
-  async function sacarTurno(){
+  async function sacarTurno() {
     const tramite = getSelectedTramite();
-    if (!tramite){
-      setMsg("Selecciona un trámite para continuar.", "error");
+    if (!tramite) {
+      setMsg("Selecciona un trámite para continuar.");
       return;
     }
 
     const wantsEmail = el.toggleEmail.checked;
     const email = el.emailContacto.value.trim();
 
-    if (wantsEmail && !isValidEmail(email)){
-      setMsg("Email inválido. Corrígelo o desactiva avisos por email.", "error");
+    if (wantsEmail && !isValidEmail(email)) {
+      setMsg("Email inválido. Corrígelo o desactiva avisos por email.");
       return;
     }
 
-    // Evitar doble click
     el.btnSacarTurno.disabled = true;
     const oldText = el.btnSacarTurno.textContent;
-    el.btnSacarTurno.textContent = "Generando...";
+    el.btnSacarTurno.textContent = "Generando…";
 
-    try{
+    try {
       const now = new Date();
-      const fechaCita = now.toISOString().slice(0,10);
-      const horaCita = now.toTimeString().slice(0,8);
+      const fechaCita = now.toISOString().slice(0, 10);
+      const horaCita = now.toTimeString().slice(0, 8);
 
-      setMsg("Creando reserva (KIOSKO)...");
+      setMsg("Creando reserva…");
 
-      // HOOK: si tu backend difiere lo ajustamos en Network
+      // OJO: emailContacto es mejora futura (DTO actual no lo guarda)
       const reservaPayload = {
-        fechaCita,
-        horaCita,
-        origenTurno: "KIOSKO",
-        tiposTramiteIds: [tramite.id],
-        emailContacto: wantsEmail ? email : null
+         fechaCita,
+          horaCita,
+          origenTurno: "KIOSKO",
+          tiposTramiteIds: [tramite.id],
+          emailContacto: wantsEmail ? email : null
       };
 
       const reserva = await API.post("/reservas", reservaPayload);
 
-      setMsg("Generando turno...");
+      setMsg("Generando turno…");
       const turno = await API.post(`/turnos/desde-reserva/${reserva.id}`, {});
 
       showTicket(turno, tramite.nombre);
       el.turnoIdConfirmar.value = turno.id;
 
-      // BOOM extra: copia ID al portapapeles (si se puede)
-      const copied = await copyToClipboard(turno.id);
-      setMsg(copied ? "Ticket generado ✅ (ID copiado)" : "Ticket generado ✅", "ok");
-
-    }catch(err){
-      setMsg(err.message || "Error al generar ticket", "error");
-      throw err;
-    }finally{
+      setMsg("Ticket generado ✅");
+    } catch (err) {
+      setMsg(err.message || "Error al generar ticket");
+    } finally {
       el.btnSacarTurno.disabled = false;
       el.btnSacarTurno.textContent = oldText;
     }
   }
 
-  async function confirmarLlegada(){
+  async function confirmarLlegada() {
     const id = Number(el.turnoIdConfirmar.value);
-    if (!Number.isFinite(id)){
+    if (!Number.isFinite(id) || !id) {
       el.resultadoConfirmar.textContent = "ID inválido.";
-      setMsg("Introduce un ID válido.", "error");
+      setMsg("Introduce un ID válido.");
       return;
     }
 
-    setMsg("Confirmando llegada...");
-    const turno = await API.request(`/turnos/${id}/confirmar`, { method:"PUT" });
+    setMsg("Confirmando llegada…");
+    try {
+      const turno = await API.request(`/turnos/${id}/confirmar`, { method: "PUT" });
 
-    el.resultadoConfirmar.innerHTML = `
-      <div><strong>✅ Llegada confirmada</strong></div>
-      <div>Turno: <strong>${escapeHtml(turno?.numeroTurno ?? "-")}</strong></div>
-      <div>Estado: <strong>${escapeHtml(turno?.estadoTurno ?? "-")}</strong></div>
-    `;
-
-    setMsg("Confirmado ✅", "ok");
+      el.resultadoConfirmar.innerHTML = `
+        <div><strong>✅ Llegada confirmada</strong></div>
+        <div>Turno: <strong>${escapeHtml(turno?.numeroTurno ?? "-")}</strong></div>
+        <div>Estado: <strong>${escapeHtml(turno?.estadoTurno ?? "-")}</strong></div>
+      `;
+      setMsg("Confirmado ✅");
+    } catch (err) {
+      el.resultadoConfirmar.textContent = err.message || "Error al confirmar";
+      setMsg("Error al confirmar");
+    }
   }
 
-  async function consultarTurno(){
+  async function consultarTurno() {
     const id = Number(el.turnoIdConsultar.value);
-    if (!Number.isFinite(id)){
+    if (!Number.isFinite(id) || !id) {
       el.resultadoConsultar.textContent = "ID inválido.";
-      setMsg("Introduce un ID válido.", "error");
+      setMsg("Introduce un ID válido.");
       return;
     }
 
-    setMsg("Consultando turno...");
-    const turno = await API.get(`/turnos/${id}`);
+    setMsg("Consultando…");
+    try {
+      const turno = await API.get(`/turnos/${id}`);
 
-    el.resultadoConsultar.innerHTML = `
-      <div><strong>🔎 Estado del turno</strong></div>
-      <div>Turno: <strong>${escapeHtml(turno?.numeroTurno ?? "-")}</strong></div>
-      <div>Estado: <strong>${escapeHtml(turno?.estadoTurno ?? "-")}</strong></div>
-      <div>Origen: <strong>${escapeHtml(turno?.origenTurno ?? "-")}</strong></div>
-    `;
-
-    setMsg("Consulta OK ✅", "ok");
+      el.resultadoConsultar.innerHTML = `
+        <div><strong>🧾 Estado del turno</strong></div>
+        <div>Turno: <strong>${escapeHtml(turno?.numeroTurno ?? "-")}</strong></div>
+        <div>Estado: <strong>${escapeHtml(turno?.estadoTurno ?? "-")}</strong></div>
+        <div>Origen: <strong>${escapeHtml(turno?.origenTurno ?? "-")}</strong></div>
+      `;
+      setMsg("Consulta OK ✅");
+    } catch (err) {
+      el.resultadoConsultar.textContent = err.message || "Error al consultar";
+      setMsg("Error al consultar");
+    }
   }
 
   // =========================
-  // EVENTOS
+  // Bind eventos
   // =========================
-  function bind(){
-    el.btnIrSacar.addEventListener("click", () => setActiveStep(el.stepSacar));
-    el.btnIrConfirmar.addEventListener("click", () => setActiveStep(el.stepConfirmar));
-    el.btnIrConsultar.addEventListener("click", () => setActiveStep(el.stepConsultar));
-    el.btnIrConfirmar2.addEventListener("click", () => setActiveStep(el.stepConfirmar));
+  function bind() {
+    // Navegación universal por data-go
+    document.querySelectorAll("[data-go]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.getAttribute("data-go");
+        if (!target) return;
 
-    el.btnLimpiar.addEventListener("click", () => {
-      document.querySelectorAll("input[name='tramite']").forEach(r => r.checked = false);
+        // Si es botón lateral o card, activamos nav y sección
+        if (["home","sacar","confirmar","consultar","info"].includes(target)) {
+          go(target);
+        }
+      });
+    });
+
+    // Asistente (de momento solo scroll a requisitos como "ayuda")
+    el.btnAsistenteHome?.addEventListener("click", () => {
+      document.getElementById("home")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      // opcional: seleccionar un tema por defecto
+      if (el.helpText) el.helpText.textContent = "Pulsa una tarjeta para ver recomendaciones.";
+    });
+
+    el.toggleEmail?.addEventListener("change", () => {
+      el.emailBox.style.display = el.toggleEmail.checked ? "block" : "none";
+      if (el.toggleEmail.checked) setTimeout(() => el.emailContacto?.focus(), 100);
+    });
+
+    el.tramiteSelect?.addEventListener("change", () => {
+      const t = getSelectedTramite();
+      if (!t) {
+        el.tramiteInfo.textContent = "Selecciona un trámite para ver más información.";
+        return;
+      }
+
+      const doc = (t.requiereDocumentacion === true)
+        ? "📎 Requiere documentación: trae copias o PDF."
+        : "✅ Normalmente no requiere documentación.";
+
+      el.tramiteInfo.textContent =
+        `📝 ${t.descripcion || "Sin descripción"} · ⏱️ ${t.duracionEstimada ?? "-"} min · ${doc}`;
+    });
+
+    el.btnSacarTurno?.addEventListener("click", sacarTurno);
+    el.btnConfirmar?.addEventListener("click", confirmarLlegada);
+    el.btnConsultar?.addEventListener("click", consultarTurno);
+
+    el.turnoIdConfirmar?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") el.btnConfirmar.click();
+    });
+
+    el.turnoIdConsultar?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") el.btnConsultar.click();
+    });
+
+    el.btnLimpiar?.addEventListener("click", () => {
+      el.tramiteSelect.value = "";
+      el.tramiteInfo.textContent = "Selecciona un trámite para ver más información.";
+
       el.toggleEmail.checked = false;
       el.emailContacto.value = "";
       el.emailBox.style.display = "none";
+
       el.turnoIdConfirmar.value = "";
       el.turnoIdConsultar.value = "";
       el.resultadoConfirmar.textContent = "—";
       el.resultadoConsultar.textContent = "—";
+
       resetTicket();
       setMsg("Listo.");
+      go("home");
     });
 
-    el.toggleEmail.addEventListener("change", () => {
-      el.emailBox.style.display = el.toggleEmail.checked ? "block" : "none";
-      if (el.toggleEmail.checked) setTimeout(() => el.emailContacto?.focus(), 60);
+    el.btnImprimirFake?.addEventListener("click", () => {
+      setMsg("Impresión (demo): preparado para impresora térmica / QR (mejora futura).");
     });
 
-    el.btnSacarTurno.addEventListener("click", () => {
-      sacarTurno().catch(err => setMsg(err.message || "Error al sacar turno", "error"));
-    });
+    const HELP = {
+      matricula: `✅ Trae DNI/NIE y documentación académica previa (si aplica).
+    📌 Consejo: prepara copias o PDFs para agilizar la atención.
+    🕒 Puede requerir revisión de datos y documentos.`,
+      docs: `📄 Revisa que los documentos estén firmados y legibles.
+    🧷 Si falta algo, te indicarán cómo completarlo.
+    💡 Consejo: trae copias y originales si te los solicitan.`,
+      cert: `🏷️ Indica el tipo: matrícula, notas, asistencia, etc.
+    ⏱️ Algunos certificados pueden tardar: consulta plazos.
+    📌 Consejo: confirma si lo necesitas con sello/registro.`,
+      info: `ℹ️ Para dudas rápidas el trámite suele ser corto.
+    ✅ Si necesitas entregar papeles, usa “Documentación”.
+    💡 Si prefieres hacerlo desde casa, usa la versión digital (fase siguiente).`
+    };
 
-    el.btnConfirmar.addEventListener("click", () => {
-      confirmarLlegada().catch(err => setMsg(err.message || "Error al confirmar", "error"));
-    });
-
-    el.btnConsultar.addEventListener("click", () => {
-      consultarTurno().catch(err => setMsg(err.message || "Error al consultar", "error"));
-    });
-
-    el.btnVolverSacar1.addEventListener("click", () => setActiveStep(el.stepSacar));
-    el.btnVolverSacar2.addEventListener("click", () => setActiveStep(el.stepSacar));
-
-    // Enter para confirmar/consultar
-    el.turnoIdConfirmar.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") el.btnConfirmar.click();
-    });
-    el.turnoIdConsultar.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") el.btnConsultar.click();
-    });
-
-    el.helpGrid.addEventListener("click", (e) => {
-      const card = e.target.closest("[data-help]");
-      if (!card) return;
-      const key = card.getAttribute("data-help");
-      el.helpText.textContent = HELP[key] || "—";
-    });
-
-    el.btnImprimirFake.addEventListener("click", () => {
-      setMsg("Impresión (demo): listo para impresora térmica / QR en mejora futura.", "ok");
-    });
-
-    el.btnFullscreen.addEventListener("click", async () => {
-      try{
-        if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
-        else await document.exitFullscreen();
-      }catch{
-        setMsg("Pantalla completa no disponible en este navegador.", "error");
-      }
+    el.helpGrid?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-help]");
+      if (!btn) return;
+      const key = btn.getAttribute("data-help");
+      if (el.helpText) el.helpText.textContent = HELP[key] || "—";
     });
   }
 
   // =========================
-  // INIT
+  // Init
   // =========================
-  async function initSystemBadges(){
-    const backendOk = await verificarBackend();
-    const climaOk = await cargarClima();
-    setEstadoSistema({ backendOk, climaOk });
-
-    // refresco suave cada 2 min (clima/estado)
-    setInterval(async () => {
-      const b = await verificarBackend();
-      const c = await cargarClima();
-      setEstadoSistema({ backendOk: b, climaOk: c });
-    }, 120000);
-  }
-
-  function init(){
+  function init() {
     if (!Auth.requireAuth()) return;
 
     const user = Auth.getCurrentUser();
-    if (!requireKioskoRole(user)){
+    if (!requireKioskoRole(user)) {
       alert("Acceso denegado: solo ADMIN/SECRETARIA/CONSERJE.");
       window.location.href = CONFIG.ROUTES.LOGIN;
       return;
     }
 
-    // cache
+    // cache DOM
     el.kTime = q("kTime");
     el.kDate = q("kDate");
     el.kMsg = q("kMsg");
     el.kEstadoSistema = q("kEstadoSistema");
-    el.kClima = q("kClima"); // 👈 añade el div en HTML
+    el.kClima = q("kClima");
 
-    el.btnFullscreen = q("btnFullscreen");
-    el.btnIrSacar = q("btnIrSacar");
-    el.btnIrConfirmar = q("btnIrConfirmar");
-    el.btnIrConsultar = q("btnIrConsultar");
+    el.btnAsistenteHome = q("btnAsistenteHome");
+    el.helpGrid = q("helpGrid");
+    el.helpText = q("helpText");
 
     el.stepSacar = q("stepSacar");
     el.stepConfirmar = q("stepConfirmar");
     el.stepConsultar = q("stepConsultar");
 
-    el.tramitesBox = q("tramitesBox");
-    if (!el.tramitesBox) {
-      console.error("Falta #tramitesBox en panel-kiosko.html");
-      setMsg("Error UI: falta el contenedor de trámites (#tramitesBox).", "error");
-      return;
-    }
+    el.tramiteSelect = q("tramiteSelect");
+    el.tramiteInfo = q("tramiteInfo");
+
     el.toggleEmail = q("toggleEmail");
     el.emailBox = q("emailBox");
     el.emailContacto = q("emailContacto");
@@ -420,30 +445,24 @@
 
     el.turnoIdConfirmar = q("turnoIdConfirmar");
     el.btnConfirmar = q("btnConfirmar");
-    el.btnVolverSacar1 = q("btnVolverSacar1");
     el.resultadoConfirmar = q("resultadoConfirmar");
 
     el.turnoIdConsultar = q("turnoIdConsultar");
     el.btnConsultar = q("btnConsultar");
-    el.btnVolverSacar2 = q("btnVolverSacar2");
     el.resultadoConsultar = q("resultadoConsultar");
 
-    el.helpGrid = q("helpGrid");
-    el.helpText = q("helpText");
-
-    // start
+    // reloj
     tickClock();
-    setInterval(tickClock, 1000 * 20);
+    setInterval(tickClock, 20000);
 
+    // eventos + badges + datos
     bind();
-    initSystemBadges().catch(() => {}); // no bloquea la UI
+    initSystemBadges().catch(() => {});
+    loadTramites().catch(err => setMsg(err.message || "Error cargando trámites"));
 
-    loadTramites().catch(err => setMsg(err.message || "Error cargando trámites", "error"));
-    setActiveStep(el.stepSacar);
-
-    // Placeholder de “llamadas”
-    q("liveActual").textContent = "A-023";
-    q("liveEstado").textContent = "En atención · Mostrador 2";
+    // estado inicial: HOME real
+    go("home");
+    resetTicket();
   }
 
   document.addEventListener("DOMContentLoaded", init);

@@ -3,320 +3,308 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Kiosko · Secretaría Inteligente</title>
+    <title>Kiosko presencial · Secretaría Inteligente</title>
 
-    <!-- Reutiliza tu sistema -->
+    <!-- Reutiliza tu sistema base -->
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/botones.css">
     <link rel="stylesheet" href="css/cards.css">
 
-    <!-- Kiosko BOOM -->
+    <!-- Kiosko (cálido, portal) -->
     <link rel="stylesheet" href="css/panel-kiosko.css">
 </head>
 
 <body class="k-body">
+<div class="k-shell">
 
-<div class="k-bg">
-    <div class="k-orb k-orb-1"></div>
-    <div class="k-orb k-orb-2"></div>
-    <div class="k-orb k-orb-3"></div>
-    <div class="k-grid"></div>
+    <!-- SIDEBAR -->
+    <aside class="k-side">
+        <div class="k-side-brand">
+            <div class="k-side-logo">SI</div>
+            <div>
+                <div class="k-side-title">Secretaría Inteligente</div>
+                <div class="k-side-sub">Kiosko presencial</div>
+            </div>
+        </div>
+
+        <nav class="k-side-nav">
+            <button class="k-side-item active" data-go="home">🏠 Inicio</button>
+            <button class="k-side-item" data-go="sacar">🗓️ Sacar turno</button>
+            <button class="k-side-item" data-go="confirmar">✅ Confirmar llegada</button>
+            <button class="k-side-item" data-go="consultar">🧾 Consultar ticket</button>
+            <button class="k-side-item" data-go="info">ℹ️ Información</button>
+            <button class="k-side-item" data-go="info">ℹ️ Información</button>
+        </nav>
+
+        <div class="k-side-foot">
+            <div class="k-side-box">
+                <div class="k-side-box-title">Horario de atención</div>
+                <div class="k-side-box-line">L–V · 08:30 – 14:30</div>
+                <div class="k-side-box-mini">Secretaría · Planta baja</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="k-page">
+
+        <!-- TOP BAR -->
+        <div class="k-topbar">
+            <div class="k-badges">
+                <div class="k-pill" id="kEstadoSistema">🟡 Sistema: comprobando…</div>
+                <div class="k-pill" id="kClima">🌤 Clima · --°C</div>
+            </div>
+
+            <div class="k-clock">
+                <div class="k-clock-time" id="kTime">--:--</div>
+                <div class="k-clock-date" id="kDate">--</div>
+            </div>
+        </div>
+
+        <!-- HOME / HERO -->
+        <section class="k-hero" id="home">
+            <div class="k-hero-left">
+                <div class="k-hero-kicker">🏫 Bienvenido al kiosko presencial</div>
+                <h1 class="k-hero-title">Realiza tus trámites de forma <strong>rápida</strong>, sencilla y segura.</h1>
+                <p class="k-hero-sub">
+                    Saca tu turno, confirma tu llegada o consulta el estado de tu ticket.
+                </p>
+
+                <div class="k-hero-actions">
+                    <button class="k-btn k-btn-primary" data-go="sacar">🗓️ Sacar turno</button>
+                    <button class="k-btn k-btn-soft" data-go="confirmar">✅ Confirmar llegada</button>
+                    <button class="k-btn k-btn-ghost" data-go="consultar">🧾 Consultar ticket</button>
+                </div>
+            </div>
+
+            <div class="k-hero-right">
+                <div class="k-assistant">
+                    <div class="k-assistant-title">🤖 Ayuda rápida</div>
+                    <div class="k-assistant-sub">Elige un tema y verás consejos al instante.</div>
+
+                    <div class="k-help-grid" id="helpGrid">
+                        <button class="k-help-card" type="button" data-help="matricula">
+                            <div class="k-help-ic">🧾</div>
+                            <div class="k-help-t">Matrícula</div>
+                            <div class="k-help-d">Documentos y pasos</div>
+                        </button>
+
+                        <button class="k-help-card" type="button" data-help="docs">
+                            <div class="k-help-ic">📄</div>
+                            <div class="k-help-t">Documentación</div>
+                            <div class="k-help-d">Entrega y revisión</div>
+                        </button>
+
+                        <button class="k-help-card" type="button" data-help="cert">
+                            <div class="k-help-ic">🏷️</div>
+                            <div class="k-help-t">Certificados</div>
+                            <div class="k-help-d">Solicitud y plazos</div>
+                        </button>
+
+                        <button class="k-help-card" type="button" data-help="info">
+                            <div class="k-help-ic">ℹ️</div>
+                            <div class="k-help-t">Info</div>
+                            <div class="k-help-d">Dudas rápidas</div>
+                        </button>
+                    </div>
+
+                    <div class="k-help-box">
+                        <div class="k-help-box-title">Consejos</div>
+                        <div class="k-help-box-body" id="helpText">Pulsa una tarjeta para ver recomendaciones.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HOME CARDS -->
+        <section class="k-cards">
+            <div class="k-card">
+                <div class="k-card-ic">🗓️</div>
+                <div>
+                    <p class="k-card-title">Sacar turno</p>
+                    <p class="k-card-desc">Obtén tu número de turno y sigue el estado.</p>
+                </div>
+                <button class="k-cardbtn" data-go="sacar" aria-label="Ir a Sacar turno">›</button>
+            </div>
+
+            <div class="k-card">
+                <div class="k-card-ic">✅</div>
+                <div>
+                    <p class="k-card-title">Confirmar llegada</p>
+                    <p class="k-card-desc">Confirma tu llegada si ya estás en el centro.</p>
+                </div>
+                <button class="k-cardbtn" data-go="confirmar" aria-label="Ir a Confirmar llegada">›</button>
+            </div>
+
+            <div class="k-card">
+                <div class="k-card-ic">🧾</div>
+                <div>
+                    <p class="k-card-title">Consultar ticket</p>
+                    <p class="k-card-desc">Consulta el estado de tu turno por ID.</p>
+                </div>
+                <button class="k-cardbtn" data-go="consultar" aria-label="Ir a Consultar ticket">›</button>
+            </div>
+
+            <div class="k-card">
+                <div class="k-card-ic">📄</div>
+                <div>
+                    <p class="k-card-title">Ayuda rápida</p>
+                    <p class="k-card-desc">Requisitos habituales y consejos.</p>
+                </div>
+                <button class="k-cardbtn" data-go="info">›</button>
+            </div>
+        </section>
+
+        <!-- SACAR TURNO -->
+        <section class="k-section k-steps" id="stepSacar">
+            <div class="k-section-head">
+                <div>
+                    <div class="k-section-title">🗓️ Sacar turno</div>
+                    <div class="k-section-sub">Selecciona un trámite y genera tu ticket.</div>
+                </div>
+                <button class="k-btn k-btn-soft" data-go="home">🏠 Volver a Inicio</button>
+            </div>
+
+            <div class="k-formgrid">
+                <div class="k-field">
+                    <label class="k-label" for="tramiteSelect">Trámite</label>
+                    <select class="k-select" id="tramiteSelect">
+                        <option value="">Cargando trámites…</option>
+                    </select>
+
+                    <div class="k-mini" id="tramiteInfo">Selecciona un trámite para ver más información.</div>
+
+                    <div class="k-field" style="margin-top:10px;">
+                        <div class="k-mini">📩 (Opcional) avisos por email (mejora futura)</div>
+                        <label class="k-mini" style="display:flex; gap:10px; align-items:center;">
+                            <input type="checkbox" id="toggleEmail" />
+                            Quiero recibir avisos por email
+                        </label>
+                        <div id="emailBox" style="display:none; margin-top:8px;">
+                            <input class="k-input" id="emailContacto" placeholder="ejemplo@gmail.com" />
+                        </div>
+                    </div>
+
+                    <div class="k-actions">
+                        <button class="k-btn k-btn-primary" id="btnSacarTurno">🎟️ Generar ticket</button>
+                        <button class="k-btn k-btn-soft" id="btnLimpiar">🧹 Limpiar</button>
+                    </div>
+
+                    <div class="k-toast" id="kMsg">Listo.</div>
+                </div>
+
+                <div class="k-ticket" id="ticketBox" style="display:none;">
+                    <div class="k-ticket-row">
+                        <div>
+                            <div class="k-badge-ok">✅ Ticket generado</div>
+                            <div class="k-ticket-num" id="ticketNumero">A-000</div>
+                            <div class="k-mini"><strong>ID Turno:</strong> <span id="ticketId">—</span></div>
+                            <div class="k-mini"><strong>Estado:</strong> <span id="ticketEstado">—</span></div>
+                            <div class="k-mini"><strong>Trámite:</strong> <span id="ticketTramite">—</span></div>
+                        </div>
+
+                        <div>
+                            <div class="k-mini">Si ya estás en el centro, pulsa “Confirmar llegada”.</div>
+                            <div class="k-actions">
+                                <button class="k-btn k-btn-primary" id="btnIrConfirmar2" data-go="confirmar">✅ Confirmar llegada</button>
+                                <button class="k-btn k-btn-soft" id="btnImprimirFake">🖨️ Imprimir (demo)</button>
+                            </div>
+                            <div class="k-mini">* Impresión real: impresora térmica / QR (mejora futura).</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CONFIRMAR -->
+        <section class="k-section k-steps" id="stepConfirmar">
+            <div class="k-section-head">
+                <div>
+                    <div class="k-section-title">✅ Confirmar llegada</div>
+                    <div class="k-section-sub">Introduce tu ID de turno y confirma.</div>
+                </div>
+                <button class="k-btn k-btn-soft" data-go="home">🏠 Volver a Inicio</button>
+            </div>
+
+            <div class="k-formgrid">
+                <div class="k-field">
+                    <label class="k-label" for="turnoIdConfirmar">ID de turno</label>
+                    <input class="k-input" id="turnoIdConfirmar" placeholder="Ej: 12" inputmode="numeric"/>
+
+                    <div class="k-actions">
+                        <button class="k-btn k-btn-primary" id="btnConfirmar">✅ Confirmar</button>
+                        <button class="k-btn k-btn-soft" data-go="sacar">⬅ Volver a Sacar turno</button>
+                    </div>
+
+                    <div class="k-mini">La confirmación solo funciona dentro de la ventana de tu cita.</div>
+                </div>
+
+                <div class="k-result">
+                    <div class="k-result-title">Resultado</div>
+                    <div class="k-result-body" id="resultadoConfirmar">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONSULTAR -->
+        <section class="k-section k-steps" id="stepConsultar">
+            <div class="k-section-head">
+                <div>
+                    <div class="k-section-title">🧾 Consultar ticket</div>
+                    <div class="k-section-sub">Consulta el estado de un turno por ID.</div>
+                </div>
+                <button class="k-btn k-btn-soft" data-go="home">🏠 Volver a Inicio</button>
+            </div>
+
+            <div class="k-formgrid">
+                <div class="k-field">
+                    <label class="k-label" for="turnoIdConsultar">ID de turno</label>
+                    <input class="k-input" id="turnoIdConsultar" placeholder="Ej: 12" inputmode="numeric"/>
+
+                    <div class="k-actions">
+                        <button class="k-btn k-btn-primary" id="btnConsultar">🔎 Consultar</button>
+                        <button class="k-btn k-btn-soft" data-go="sacar">⬅ Volver a Sacar turno</button>
+                    </div>
+                </div>
+
+                <div class="k-result">
+                    <div class="k-result-title">Estado</div>
+                    <div class="k-result-body" id="resultadoConsultar">—</div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- INFO -->
+        <section class="k-section" id="info">
+            <div class="k-section-head">
+                <div>
+                    <div class="k-section-title">ℹ️ Información del centro</div>
+                    <div class="k-section-sub">Contacto y datos generales.</div>
+                </div>
+            </div>
+
+            <div class="k-result">
+                <div class="k-result-title">IES de Teis · Vigo</div>
+                <div class="k-result-body">
+                    Horario: 08:30 – 14:30 · L–V<br/>
+                    Secretaría: Planta baja<br/>
+                    (Estos textos luego los puedes conectar a /centro/info si quieres)
+                </div>
+            </div>
+        </section>
+
+        <!-- Scripts -->
+        <script src="js/config.js"></script>
+        <script src="js/auth.js"></script>
+        <script src="js/api.js"></script>
+        <script src="js/pages/panel-kiosko.js"></script>
+
+    </div>
 </div>
-
-<header class="k-header">
-    <div class="k-brand">
-        <div class="k-logo" aria-hidden="true">
-            <span class="k-logo-inner">SI</span>
-        </div>
-        <div>
-            <div class="k-brand-title">Secretaría Inteligente</div>
-            <div class="k-brand-subtitle">Kiosko de atención presencial</div>
-        </div>
-    </div>
-
-    <div class="k-header-right">
-        <div class="k-pill" id="kEstadoSistema">🟢 Sistema: OK</div>
-        <div class="k-pill" id="kClima">🌤 --°C</div>
-        <div class="k-clock">
-            <div class="k-clock-time" id="kTime">--:--</div>
-            <div class="k-clock-date" id="kDate">--/--/----</div>
-        </div>
-        <button class="k-btn k-btn-ghost" id="btnFullscreen" title="Pantalla completa">⛶</button>
-    </div>
-</header>
-
-
-<main class="k-main">
-
-    <!-- HERO -->
-    <section class="k-hero">
-        <div class="k-hero-left">
-            <div class="k-badge">🏥 Autoservicio</div>
-            <h1 class="k-title">Saca tu turno en <span class="k-title-grad">10 segundos</span>.</h1>
-            <p class="k-subtitle">
-                Selecciona el trámite, genera tu ticket y espera a ser llamado en la <strong>pantalla principal</strong>.
-                Si quieres, añade tu email para recibir avisos sin registrarte.
-            </p>
-
-            <div class="k-cta-row">
-                <button class="k-btn k-btn-primary k-btn-xl" id="btnIrSacar">
-                    🎟️ Sacar turno
-                    <span class="k-btn-hint">Nuevo ticket</span>
-                </button>
-
-                <button class="k-btn k-btn-secondary k-btn-xl" id="btnIrConfirmar">
-                    ✅ Confirmar llegada
-                    <span class="k-btn-hint">Check-in</span>
-                </button>
-
-                <button class="k-btn k-btn-ghost k-btn-xl" id="btnIrConsultar">
-                    🔎 Consultar
-                    <span class="k-btn-hint">Estado del ticket</span>
-                </button>
-            </div>
-
-            <div class="k-info-strip">
-                <div class="k-info-item">📍 Centro: <strong>IES de Teis</strong></div>
-                <div class="k-info-item">🕒 Horario: <strong>08:30 - 14:30</strong></div>
-                <div class="k-info-item">ℹ️ Consejo: <strong>Ten tu documentación preparada</strong></div>
-            </div>
-        </div>
-
-        <!-- Panel “en vivo” (placeholder para pantalla de llamadas / futura API) -->
-        <div class="k-hero-right">
-            <div class="k-live card no-hover">
-                <div class="k-live-head">
-                    <div class="k-live-title">📣 Llamadas (Vista previa)</div>
-                    <div class="k-live-sub">En la pantalla principal verás el turno actual y los siguientes.</div>
-                </div>
-
-                <div class="k-live-body">
-                    <div class="k-live-current">
-                        <div class="k-live-label">Turno actual</div>
-                        <div class="k-live-number" id="liveActual">—</div>
-                        <div class="k-live-status" id="liveEstado">—</div>
-                    </div>
-
-                    <div class="k-live-next">
-                        <div class="k-live-label">Siguientes</div>
-                        <div class="k-live-list" id="liveSiguientes">
-                            <div class="k-chip">—</div>
-                            <div class="k-chip">—</div>
-                            <div class="k-chip">—</div>
-                            <div class="k-chip">—</div>
-                            <div class="k-chip">—</div>
-                        </div>
-                    </div>
-
-                    <div class="k-live-foot">
-                        <div class="k-tip">💡 Tras sacar turno, espera a ser llamado.</div>
-                        <a class="k-link" href="panel-admin.html">Ir a Admin</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PANEL PRINCIPAL: PASOS -->
-    <section class="k-panel">
-        <div class="k-steps">
-            <div class="k-step active" id="stepSacar">
-                <div class="k-step-head">
-                    <div class="k-step-title">🎟️ Sacar turno</div>
-                    <div class="k-step-sub">Selecciona trámite y genera tu ticket.</div>
-                </div>
-
-                <div class="k-card">
-                    <div class="k-row">
-                        <div class="k-col">
-                            <div class="k-field">
-                                <label class="k-label">Trámite</label>
-                                <select class="k-select" id="tramiteSelect">
-                                    <option value="">Selecciona un trámite...</option>
-                                </select>
-
-                                <div class="k-mini text-secondary" id="tramiteInfo">
-                                    Selecciona un trámite para ver más información.
-                                </div>
-                                <div class="k-mini text-secondary">* Se permite 1 trámite (por ahora) para flujo rápido.</div>
-                            </div>
-                        </div>
-
-                        <div class="k-col">
-                            <div class="k-field">
-                                <label class="k-label">Opciones</label>
-
-                                <div class="k-toggle">
-                                    <input type="checkbox" id="toggleEmail">
-                                    <label for="toggleEmail">
-                                        📩 Quiero recibir avisos por email (sin registrarme)
-                                    </label>
-                                </div>
-                                <div class="k-mini text-secondary" style="margin-top:10px;">
-                                    💡 ¿Prefieres hacerlo online? Regístrate en la web y podrás gestionar trámites, documentación y notificaciones desde casa.
-                                </div>
-
-                                <div class="k-field" id="emailBox" style="display:none;">
-                                    <label class="k-label">Email</label>
-                                    <input class="k-input" id="emailContacto" placeholder="ejemplo@gmail.com">
-                                    <div class="k-mini text-secondary">Te avisaremos cuando tu turno esté cerca (futuro: WhatsApp).</div>
-                                </div>
-
-                                <div class="k-actions">
-                                    <button class="k-btn k-btn-primary k-btn-lg" id="btnSacarTurno">🎟️ Generar ticket</button>
-                                    <button class="k-btn k-btn-secondary k-btn-lg" id="btnLimpiar">🧹 Limpiar</button>
-                                </div>
-
-                                <div class="k-toastline" id="kMsg">Listo.</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="k-ticket" id="ticketBox" style="display:none;">
-                        <div class="k-ticket-left">
-                            <div class="k-ticket-title">🎫 Ticket generado</div>
-                            <div class="k-ticket-number" id="ticketNumero">A-000</div>
-                            <div class="k-ticket-meta">
-                                <div><strong>ID Turno:</strong> <span id="ticketId">—</span></div>
-                                <div><strong>Estado:</strong> <span id="ticketEstado">—</span></div>
-                                <div><strong>Trámite:</strong> <span id="ticketTramite">—</span></div>
-                            </div>
-                        </div>
-
-                        <div class="k-ticket-right">
-                            <div class="k-ticket-hint">
-                                ✅ Si ya estás en el centro, pulsa <strong>Confirmar llegada</strong>.
-                            </div>
-                            <div class="k-ticket-buttons">
-                                <button class="k-btn k-btn-success k-btn-lg" id="btnIrConfirmar2">✅ Confirmar llegada</button>
-                                <button class="k-btn k-btn-ghost k-btn-lg" id="btnImprimirFake">🖨️ Imprimir (demo)</button>
-                            </div>
-                            <div class="k-mini text-secondary">
-                                * Impresión real (futuro): impresora térmica / QR.
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="k-step" id="stepConfirmar">
-                <div class="k-step-head">
-                    <div class="k-step-title">✅ Confirmar llegada</div>
-                    <div class="k-step-sub">Introduce tu ID de turno y confirma.</div>
-                </div>
-
-                <div class="k-card">
-                    <div class="k-row">
-                        <div class="k-col">
-                            <div class="k-field">
-                                <label class="k-label">ID de turno</label>
-                                <input class="k-input k-input-xl" id="turnoIdConfirmar" placeholder="Ej: 12">
-                                <div class="k-actions">
-                                    <button class="k-btn k-btn-success k-btn-xl" id="btnConfirmar">✅ Confirmar</button>
-                                    <button class="k-btn k-btn-ghost k-btn-xl" id="btnVolverSacar1">⬅ Volver</button>
-                                </div>
-                                <div class="k-mini text-secondary">
-                                    Si no sabes tu ID, revisa tu ticket o consulta en conserjería.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="k-col">
-                            <div class="k-result card no-hover">
-                                <div class="k-result-title">Resultado</div>
-                                <div class="k-result-body" id="resultadoConfirmar">—</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="k-step" id="stepConsultar">
-                <div class="k-step-head">
-                    <div class="k-step-title">🔎 Consultar ticket</div>
-                    <div class="k-step-sub">Consulta el estado de un turno por ID.</div>
-                </div>
-
-                <div class="k-card">
-                    <div class="k-row">
-                        <div class="k-col">
-                            <div class="k-field">
-                                <label class="k-label">ID de turno</label>
-                                <input class="k-input k-input-xl" id="turnoIdConsultar" placeholder="Ej: 12">
-                                <div class="k-actions">
-                                    <button class="k-btn k-btn-secondary k-btn-xl" id="btnConsultar">🔎 Consultar</button>
-                                    <button class="k-btn k-btn-ghost k-btn-xl" id="btnVolverSacar2">⬅ Volver</button>
-                                </div>
-                                <div class="k-mini text-secondary">
-                                    (Implementación: endpoint GET de turno por ID).
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="k-col">
-                            <div class="k-result card no-hover">
-                                <div class="k-result-title">Estado</div>
-                                <div class="k-result-body" id="resultadoConsultar">—</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- AYUDA RÁPIDA -->
-        <aside class="k-help">
-            <div class="k-help-head">
-                <div class="k-help-title">🤖 Ayuda rápida</div>
-                <div class="k-help-sub">Selecciona un trámite para ver consejos.</div>
-            </div>
-
-            <div class="k-help-grid" id="helpGrid">
-                <button class="k-help-card" data-help="matricula">
-                    <div class="k-help-ic">🧾</div>
-                    <div class="k-help-t">Matrícula</div>
-                    <div class="k-help-d">Documentos y pasos.</div>
-                </button>
-
-                <button class="k-help-card" data-help="docs">
-                    <div class="k-help-ic">📄</div>
-                    <div class="k-help-t">Documentación</div>
-                    <div class="k-help-d">Entrega y revisión.</div>
-                </button>
-
-                <button class="k-help-card" data-help="cert">
-                    <div class="k-help-ic">🏷️</div>
-                    <div class="k-help-t">Certificados</div>
-                    <div class="k-help-d">Solicitud y recogida.</div>
-                </button>
-
-                <button class="k-help-card" data-help="info">
-                    <div class="k-help-ic">ℹ️</div>
-                    <div class="k-help-t">Info general</div>
-                    <div class="k-help-d">Dudas frecuentes.</div>
-                </button>
-            </div>
-
-            <div class="k-help-box" id="helpBox">
-                <div class="k-help-box-title">Consejos</div>
-                <div class="k-help-box-body" id="helpText">
-                    Elige una tarjeta para ver recomendaciones rápidas.
-                </div>
-            </div>
-        </aside>
-    </section>
-
-</main>
-
-
-<script src="js/config.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/api.js"></script>
-
-<script src="js/pages/panel-kiosko.js"></script>
 </body>
 </html>

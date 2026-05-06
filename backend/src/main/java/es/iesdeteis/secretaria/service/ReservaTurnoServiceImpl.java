@@ -122,6 +122,7 @@ public class ReservaTurnoServiceImpl implements ReservaTurnoService {
         reservaTurno.setFechaCita(dto.getFechaCita());
         reservaTurno.setHoraCita(dto.getHoraCita());
         reservaTurno.setOrigenTurno(dto.getOrigenTurno());
+        reservaTurno.setEmailContacto(dto.getEmailContacto());
         reservaTurno.setEstadoReserva(EstadoReserva.PENDIENTE);
 
         reservaTurno.setCodigoReferencia("RES-" + System.currentTimeMillis());

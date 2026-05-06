@@ -30,6 +30,7 @@ public class TurnoServiceImpl implements TurnoService {
     private final UsuarioRepository usuarioRepository;
     private final NotificacionService notificacionService;
     private int turnosPrioritariosSeguidos = 0;
+    private final EmailService emailService;
 
     // CONSTRUCTOR
 
@@ -38,13 +39,16 @@ public class TurnoServiceImpl implements TurnoService {
                             ReservaTurnoRepository reservaTurnoRepository,
                             HistorialAccionService historialAccionService,
                             UsuarioRepository usuarioRepository,
-                            NotificacionService notificacionService) {
+                            NotificacionService notificacionService,
+                            EmailService emailService) {
+
         this.turnoRepository = turnoRepository;
         this.tipoTramiteRepository = tipoTramiteRepository;
         this.reservaTurnoRepository = reservaTurnoRepository;
         this.historialAccionService = historialAccionService;
         this.usuarioRepository = usuarioRepository;
         this.notificacionService = notificacionService;
+        this.emailService = emailService;
     }
 
 
@@ -144,11 +148,54 @@ public class TurnoServiceImpl implements TurnoService {
         // Calcular prioridad automática
         asignarPrioridad(turno);
 
+        // Marcar la reserva como procesada
         reservaTurno.setEstadoReserva(EstadoReserva.CONFIRMADA);
         reservaTurnoRepository.save(reservaTurno);
 
         Turno turnoGuardado = turnoRepository.save(turno);
 
+        // =========================
+        // ✅ ENVIAR TICKET POR EMAIL (si el kiosko puso emailContacto)
+        // =========================
+        String emailContacto = reservaTurno.getEmailContacto();
+        System.out.println("DEBUG kiosko emailContacto reserva: [" + emailContacto + "]");
+
+        if (emailContacto != null && !emailContacto.isBlank()) {
+
+            String asunto = "Tu ticket de turno - Secretaría Inteligente";
+
+            String tramites = (turnoGuardado.getTiposTramite() != null)
+                    ? String.join(", ",
+                    turnoGuardado.getTiposTramite().stream().map(TipoTramite::getNombre).toList()
+            )
+                    : "—";
+
+            String mensaje =
+                    "✅ Ticket generado\n\n" +
+                            "Número: " + turnoGuardado.getNumeroTurno() + "\n" +
+                            "ID Turno: " + turnoGuardado.getId() + "\n" +
+                            "Fecha: " + turnoGuardado.getFechaCita() + "\n" +
+                            "Hora: " + turnoGuardado.getHoraCita() + "\n" +
+                            "Trámite(s): " + tramites + "\n\n" +
+                            "📌 Si ya estás en el centro, confirma tu llegada en el kiosko.\n" +
+                            "Gracias.";
+
+            try {
+                emailService.enviarEmail(emailContacto.trim(), asunto, mensaje);
+                System.out.println("DEBUG email enviado OK a " + emailContacto);
+            } catch (Exception ex) {
+                System.out.println("DEBUG fallo enviando email: " + ex.getMessage());
+                ex.printStackTrace();
+                // Importante: NO lanzamos excepción para que el turno se cree igual
+            }
+
+        } else {
+            System.out.println("DEBUG no se envía email: emailContacto vacío o null");
+        }
+
+        // =========================
+        // Historial + notificación interna
+        // =========================
         registrarHistorial(
                 "CREACION_TURNO",
                 "Se creó el turno " + turnoGuardado.getNumeroTurno() +

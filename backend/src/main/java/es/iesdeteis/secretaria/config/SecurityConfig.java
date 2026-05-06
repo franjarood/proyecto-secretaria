@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/incidencias/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE")
                         .requestMatchers("/turnos/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
-                        .requestMatchers("/reservas/**").hasAnyRole("ADMIN", "SECRETARIA", "USUARIO", "ALUMNO")
+                        .requestMatchers("/reservas/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
                         .requestMatchers("/notificaciones/**").hasAnyRole("ADMIN", "SECRETARIA", "CONSERJE", "USUARIO", "ALUMNO")
                         .requestMatchers("/favicon.ico").permitAll()
                         .anyRequest().authenticated()

@@ -36,6 +36,9 @@ public class ReservaTurno {
     @Enumerated(EnumType.STRING)
     private EstadoReserva estadoReserva;
 
+    private String emailContacto;
+
+
     // =========================
     // RELACIONES
     // =========================
@@ -166,6 +169,11 @@ public class ReservaTurno {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+
+    public String getEmailContacto() { return emailContacto; }
+
+    public void setEmailContacto(String emailContacto) { this.emailContacto = emailContacto; }
+
 
     // =========================
     // TO STRING

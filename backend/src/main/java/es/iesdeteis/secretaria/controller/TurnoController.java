@@ -57,7 +57,7 @@ public class TurnoController {
     }
 
     // Crear turno a partir de una reserva
-    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SECRETARIA', 'CONSERJE')")
     @PostMapping("/desde-reserva/{idReserva}")
     public TurnoResponseDTO crearTurnoDesdeReserva(@PathVariable Long idReserva) {
         Turno turnoCreado = turnoService.crearTurnoDesdeReserva(idReserva);
