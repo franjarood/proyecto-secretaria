@@ -101,26 +101,6 @@ public class TurnoServiceImpl implements TurnoService {
     }
 
     @Override
-    public Turno save(Turno turno) {
-
-        // Cargar trámites completos desde BD
-        List<TipoTramite> tramitesCompletos = cargarTramitesCompletos(turno.getTiposTramite());
-        turno.setTiposTramite(tramitesCompletos);
-
-        // Calcular duración estimada
-        Integer duracion = calculateEstimatedDuration(turno);
-        turno.setDuracionEstimada(duracion);
-
-        // Estado inicial al reservar desde casa
-        turno.setEstadoTurno(EstadoTurno.RESERVADO);
-
-        // Calcular prioridad automática
-        asignarPrioridad(turno);
-
-        return turnoRepository.save(turno);
-    }
-
-    @Override
     public Turno crearTurnoDesdeReserva(Long reservaId) {
 
         ReservaTurno reservaTurno = reservaTurnoRepository.findById(reservaId)
@@ -154,11 +134,8 @@ public class TurnoServiceImpl implements TurnoService {
 
         Turno turnoGuardado = turnoRepository.save(turno);
 
-        // =========================
-        // ✅ ENVIAR TICKET POR EMAIL (si el kiosko puso emailContacto)
-        // =========================
+        // ✅ Enviar ticket por email si el kiosko lo indicó
         String emailContacto = reservaTurno.getEmailContacto();
-        System.out.println("DEBUG kiosko emailContacto reserva: [" + emailContacto + "]");
 
         if (emailContacto != null && !emailContacto.isBlank()) {
 
@@ -182,20 +159,11 @@ public class TurnoServiceImpl implements TurnoService {
 
             try {
                 emailService.enviarEmail(emailContacto.trim(), asunto, mensaje);
-                System.out.println("DEBUG email enviado OK a " + emailContacto);
             } catch (Exception ex) {
-                System.out.println("DEBUG fallo enviando email: " + ex.getMessage());
-                ex.printStackTrace();
-                // Importante: NO lanzamos excepción para que el turno se cree igual
+                System.out.println("Aviso: no se pudo enviar email del ticket (no bloquea el turno).");
             }
-
-        } else {
-            System.out.println("DEBUG no se envía email: emailContacto vacío o null");
         }
 
-        // =========================
-        // Historial + notificación interna
-        // =========================
         registrarHistorial(
                 "CREACION_TURNO",
                 "Se creó el turno " + turnoGuardado.getNumeroTurno() +
